@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="Login to the Human Milk Bank Management System — HMBMS. Staff, donors, and recipients use this portal. Your dashboard is shown based on your account type." />
+  <meta name="robots" content="noindex, nofollow" />
+
+  <title>Login — Human Milk Bank Management System (HMBMS)</title>
+
+  <link rel="stylesheet" href="assets/css/style.css" />
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🍼</text></svg>" />
+</head>
+<body class="login-page">
+
+  <!-- ─── LOGIN NAVBAR ──────────────────────────────────────────── -->
+  <nav class="login-navbar" aria-label="Login page navigation">
+    <div class="nav-inner">
+      <a href="index.html" class="nav-brand login-nav-brand" aria-label="Return to HMBMS homepage">
+        <div class="nav-logo-icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+            <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 14H9V8h2v8zm4 0h-2V8h2v8z"/>
+          </svg>
+        </div>
+        <div class="nav-brand-text">
+          <span class="nav-system-name">HMBMS</span>
+          <span class="nav-org-name">Makati Human Milk Bank</span>
+        </div>
+      </a>
+
+      <a href="index.html" class="login-back-home" id="back-to-home-btn" aria-label="Go back to the HMBMS homepage">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/></svg>
+        Back to Homepage
+      </a>
+    </div>
+  </nav>
+
+  <!-- ─── LOGIN MAIN CONTENT ────────────────────────────────────── -->
+  <main class="login-page-wrap" id="main-content">
+    <div class="login-container" role="main">
+
+      <!-- LEFT PANEL: Brand + Role info -->
+      <div class="login-panel-left" aria-hidden="true">
+        <div class="login-left-top">
+          <!-- Logo -->
+          <div class="login-left-logo">
+            <div class="login-left-logo-icon">
+              <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 14H9V8h2v8zm4 0h-2V8h2v8z"/>
+              </svg>
+            </div>
+            <div class="login-left-logo-text">
+              <span class="nav-system-name">HMBMS</span>
+              <span class="nav-org-name">Makati Human Milk Bank</span>
+            </div>
+          </div>
+
+          <h2 class="login-left-headline">Secure Access<br/>for Milk Bank Staff,<br/>Donors &amp; Recipients</h2>
+          <p class="login-left-desc">
+            All users — staff, donors, and recipients — use this single login portal. Your personalized dashboard is loaded automatically based on your account type.
+          </p>
+        </div>
+
+        <!-- Role list -->
+        <div class="login-left-bottom">
+          <p style="font-size:0.72rem; font-weight:700; color:rgba(255,255,255,0.40); letter-spacing:0.08em; text-transform:uppercase; margin-bottom:12px;">
+            Supported User Roles
+          </p>
+          <div class="login-role-list">
+            <div class="login-role-item">
+              <span class="role-dot admin"></span>
+              Administrator
+            </div>
+            <div class="login-role-item">
+              <span class="role-dot medtech"></span>
+              Medical Technologist
+            </div>
+            <div class="login-role-item">
+              <span class="role-dot nurse"></span>
+              Nurse / Midwife
+            </div>
+            <div class="login-role-item">
+              <span class="role-dot donor"></span>
+              Donor
+            </div>
+            <div class="login-role-item">
+              <span class="role-dot recipient"></span>
+              Recipient / Beneficiary
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- RIGHT PANEL: Login Form -->
+      <div class="login-panel-right">
+        <h1 class="login-form-title">Welcome Back</h1>
+        <p class="login-form-subtitle">Sign in to access your HMBMS dashboard.</p>
+
+        <!-- Role info note -->
+        <div class="login-note" role="note" aria-label="Login information">
+          <svg class="login-note-icon" viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/>
+          </svg>
+          <p>
+            <em>Staff, Donors, and Recipients all use this login. Your dashboard will be shown based on your account type.</em>
+          </p>
+        </div>
+
+        <!-- LOGIN FORM -->
+        <form id="login-form" action="#" method="post" novalidate aria-label="HMBMS login form">
+
+          <!-- Username -->
+          <div class="form-group">
+            <label class="form-label" for="username-input">
+              Username
+              <span class="required-star" aria-hidden="true">*</span>
+            </label>
+            <div class="input-wrap">
+              <input
+                class="form-input"
+                type="text"
+                id="username-input"
+                name="username"
+                placeholder="Enter your username"
+                required
+                autocomplete="username"
+                autocapitalize="none"
+                spellcheck="false"
+                aria-required="true"
+                aria-describedby="username-hint"
+              />
+              <svg class="input-icon" viewBox="0 0 24 24" aria-hidden="true">
+                <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
+              </svg>
+            </div>
+            <span id="username-hint" class="sr-only">Enter your HMBMS account username.</span>
+          </div>
+
+          <!-- Password -->
+          <div class="form-group">
+            <label class="form-label" for="password-input">
+              Password
+              <span class="required-star" aria-hidden="true">*</span>
+            </label>
+            <div class="input-wrap">
+              <input
+                class="form-input has-toggle"
+                type="password"
+                id="password-input"
+                name="password"
+                placeholder="Enter your password"
+                required
+                autocomplete="current-password"
+                aria-required="true"
+                aria-describedby="password-hint"
+              />
+              <svg class="input-icon" viewBox="0 0 24 24" aria-hidden="true">
+                <path d="M18 8h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2zm-6 9c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zm3.1-9H8.9V6c0-1.71 1.39-3.1 3.1-3.1 1.71 0 3.1 1.39 3.1 3.1v2z"/>
+              </svg>
+              <!-- Toggle password visibility -->
+              <button
+                type="button"
+                class="password-toggle"
+                id="password-toggle-btn"
+                aria-label="Toggle password visibility"
+                aria-pressed="false"
+              >
+                <!-- Eye icon (visible) -->
+                <svg id="icon-eye" viewBox="0 0 24 24" aria-hidden="true">
+                  <path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zm0 12.5c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"/>
+                </svg>
+                <!-- Eye-off icon (hidden) -->
+                <svg id="icon-eye-off" viewBox="0 0 24 24" style="display:none;" aria-hidden="true">
+                  <path d="M12 7c2.76 0 5 2.24 5 5 0 .65-.13 1.26-.36 1.83l2.92 2.92c1.51-1.26 2.7-2.89 3.43-4.75-1.73-4.39-6-7.5-11-7.5-1.4 0-2.74.25-3.98.7l2.16 2.16C10.74 7.13 11.35 7 12 7zM2 4.27l2.28 2.28.46.46C3.08 8.3 1.78 10.02 1 12c1.73 4.39 6 7.5 11 7.5 1.55 0 3.03-.3 4.38-.84l.42.42L19.73 22 21 20.73 3.27 3 2 4.27zM7.53 9.8l1.55 1.55c-.05.21-.08.43-.08.65 0 1.66 1.34 3 3 3 .22 0 .44-.03.65-.08l1.55 1.55c-.67.33-1.41.53-2.2.53-2.76 0-5-2.24-5-5 0-.79.2-1.53.53-2.2zm4.31-.78l3.15 3.15.02-.16c0-1.66-1.34-3-3-3l-.17.01z"/>
+                </svg>
+              </button>
+            </div>
+            <span id="password-hint" class="sr-only">Enter your HMBMS account password. Characters are hidden.</span>
+          </div>
+
+          <!-- Forgot password -->
+          <div class="form-row-extras">
+            <a href="#" class="forgot-link" id="forgot-password-link" aria-label="Forgot your password? Reset it here.">
+              Forgot password?
+            </a>
+          </div>
+
+          <!-- Submit Button -->
+          <button
+            type="submit"
+            class="btn-login"
+            id="login-submit-btn"
+            aria-label="Sign in to HMBMS"
+          >
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <path d="M11 7L9.6 8.4l2.6 2.6H2v2h10.2l-2.6 2.6L11 17l5-5-5-5zm9 12h-8v2h8c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2h-8v2h8v14z"/>
+            </svg>
+            Login
+          </button>
+
+        </form>
+
+        <!-- Register link -->
+        <p class="login-register-link">
+          Are you a new donor?
+          <a href="#" id="register-donor-link" aria-label="Register as a new donor">Register here</a>
+        </p>
+      </div>
+    </div>
+  </main>
+
+  <!-- ─── LOGIN FOOTER ───────────────────────────────────────────── -->
+  <footer class="login-footer" role="contentinfo">
+    <p>
+      © 2026 Makati Human Milk Bank | Powered by HMBMS |
+      <a href="#" id="login-privacy-policy">Privacy Policy</a> |
+      DOH PHM Guidelines Compliant | Data Privacy Act 2012
+    </p>
+  </footer>
+
+  <!-- ─── JAVASCRIPT ─────────────────────────────────────────────── -->
+  <script>
+    // ── Password toggle visibility
+    const passwordInput = document.getElementById('password-input');
+    const toggleBtn     = document.getElementById('password-toggle-btn');
+    const iconEye       = document.getElementById('icon-eye');
+    const iconEyeOff    = document.getElementById('icon-eye-off');
+
+    toggleBtn.addEventListener('click', () => {
+      const isHidden = passwordInput.type === 'password';
+      passwordInput.type = isHidden ? 'text' : 'password';
+      iconEye.style.display    = isHidden ? 'none'  : '';
+      iconEyeOff.style.display = isHidden ? ''      : 'none';
+      toggleBtn.setAttribute('aria-pressed', isHidden ? 'true' : 'false');
+      toggleBtn.setAttribute('aria-label', isHidden ? 'Hide password' : 'Show password');
+    });
+
+    // ── Basic client-side validation feedback (form is non-functional — placeholder)
+    const loginForm = document.getElementById('login-form');
+    loginForm.addEventListener('submit', (e) => {
+      e.preventDefault();
+
+      const username = document.getElementById('username-input').value.trim();
+      const password = document.getElementById('password-input').value;
+
+      if (!username) {
+        document.getElementById('username-input').focus();
+        document.getElementById('username-input').style.borderColor = 'var(--clr-error)';
+        return;
+      }
+      if (!password) {
+        document.getElementById('password-input').focus();
+        document.getElementById('password-input').style.borderColor = 'var(--clr-error)';
+        return;
+      }
+
+      // Placeholder — backend routing in Stage 2
+      const btn = document.getElementById('login-submit-btn');
+      btn.textContent = 'Signing in…';
+      btn.disabled = true;
+      setTimeout(() => {
+        btn.innerHTML = `
+          <svg viewBox="0 0 24 24" width="18" height="18" fill="#fff" aria-hidden="true">
+            <path d="M11 7L9.6 8.4l2.6 2.6H2v2h10.2l-2.6 2.6L11 17l5-5-5-5zm9 12h-8v2h8c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2h-8v2h8v14z"/>
+          </svg>
+          Login`;
+        btn.disabled = false;
+        alert('⚠️ Backend not yet connected. This is Stage 1 — login routing will be implemented in Stage 2.');
+      }, 800);
+    });
+
+    // Reset error border on input
+    ['username-input', 'password-input'].forEach(id => {
+      document.getElementById(id).addEventListener('input', (e) => {
+        e.target.style.borderColor = '';
+      });
+    });
+  </script>
+
+  <!-- Screen-reader-only utility -->
+  <style>
+    .sr-only {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      padding: 0;
+      overflow: hidden;
+      clip: rect(0,0,0,0);
+      white-space: nowrap;
+      border: 0;
+    }
+  </style>
+</body>
+</html>

@@ -1,0 +1,500 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="The Makati Human Milk Bank Management System (HMBMS) manages the full lifecycle of donated human milk — screening, processing, and safe dispensing for premature and medically fragile infants." />
+  <meta name="keywords" content="human milk bank, makati, donor milk, NICU, pasteurized milk, Philippines" />
+  <meta name="author" content="Makati Human Milk Bank" />
+
+  <title>Makati Human Milk Bank — Human Milk Bank Management System (HMBMS)</title>
+
+  <!-- Open Graph -->
+  <meta property="og:title" content="Makati Human Milk Bank Management System" />
+  <meta property="og:description" content="Safe Donor Milk. Stronger Babies." />
+  <meta property="og:type" content="website" />
+
+  <link rel="stylesheet" href="assets/css/style.css" />
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🍼</text></svg>" />
+</head>
+<body>
+
+  <!-- ─── NAVBAR ─────────────────────────────────────────────── -->
+  <nav class="navbar" id="main-navbar" role="navigation" aria-label="Main navigation">
+    <div class="container nav-inner">
+      <!-- Brand -->
+      <a href="index.html" class="nav-brand" aria-label="Go to HMBMS homepage">
+        <div class="nav-logo-icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+            <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 14H9V8h2v8zm4 0h-2V8h2v8z"/>
+          </svg>
+        </div>
+        <div class="nav-brand-text">
+          <span class="nav-system-name">HMBMS</span>
+          <span class="nav-org-name">Makati Human Milk Bank</span>
+        </div>
+      </a>
+
+      <!-- Navigation Links -->
+      <ul class="nav-links" id="nav-links" role="menubar">
+        <li role="none"><a href="#home"     class="active" role="menuitem" id="nav-home">Home</a></li>
+        <li role="none"><a href="#about"    role="menuitem" id="nav-about">About</a></li>
+        <li role="none"><a href="#how"      role="menuitem" id="nav-how">How It Works</a></li>
+        <li role="none"><a href="#programs" role="menuitem" id="nav-programs">Programs</a></li>
+        <li role="none"><a href="#contact"  role="menuitem" id="nav-contact">Contact</a></li>
+        <li role="none">
+          <a href="login.html" class="nav-login-btn" role="menuitem" id="nav-login-btn" aria-label="Go to login page">
+            Login
+          </a>
+        </li>
+      </ul>
+
+      <!-- Hamburger (mobile) -->
+      <button class="nav-toggle" id="nav-toggle" aria-label="Toggle navigation menu" aria-expanded="false">
+        <span></span>
+        <span></span>
+        <span></span>
+      </button>
+    </div>
+  </nav>
+
+  <!-- ─── HERO SECTION ───────────────────────────────────────── -->
+  <section class="hero" id="home" aria-label="Hero section">
+    <img
+      class="hero-bg-img"
+      src="assets/img/hero_banner.png"
+      alt="Mother and newborn in a caring hospital setting"
+      loading="eager"
+    />
+    <div class="hero-pattern" aria-hidden="true"></div>
+
+    <div class="container">
+      <div class="hero-inner">
+        <!-- Left: Text -->
+        <div class="hero-content">
+          <div class="hero-badge" aria-label="Live system status">
+            <span class="hero-badge-dot" aria-hidden="true"></span>
+            DOH-Compliant Milk Bank System
+          </div>
+
+          <h1 class="hero-headline">
+            Safe Donor Milk.<br/>
+            <span class="highlight">Stronger Babies.</span>
+          </h1>
+
+          <p class="hero-subtitle">
+            The HMBMS manages the full lifecycle of donated human milk — from donor screening and collection, through pasteurization and laboratory testing, to safe dispensing for premature and medically fragile infants in the NICU and community.
+          </p>
+
+          <div class="hero-cta">
+            <a href="#" class="btn btn-accent" id="btn-become-donor" aria-label="Learn how to become a donor">
+              <svg viewBox="0 0 24 24" width="18" height="18" fill="#fff" aria-hidden="true"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm5 11h-4v4h-2v-4H7v-2h4V7h2v4h4v2z"/></svg>
+              Become a Donor
+            </a>
+            <a href="#" class="btn btn-outline" id="btn-request-milk" aria-label="Submit a milk request">
+              <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor" aria-hidden="true"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-5 14H7v-2h7v2zm3-4H7v-2h10v2zm0-4H7V7h10v2z"/></svg>
+              Request Milk
+            </a>
+          </div>
+
+          <div class="hero-stats" role="list" aria-label="Key statistics">
+            <div class="hero-stat" role="listitem">
+              <span class="hero-stat-value">5</span>
+              <span class="hero-stat-label">User Roles Supported</span>
+            </div>
+            <div class="hero-stat" role="listitem">
+              <span class="hero-stat-value">3</span>
+              <span class="hero-stat-label">Collection Programs</span>
+            </div>
+            <div class="hero-stat" role="listitem">
+              <span class="hero-stat-value">−20°C</span>
+              <span class="hero-stat-label">Cold Chain Storage</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Right: Live Process Card -->
+        <div class="hero-visual" aria-hidden="true">
+          <!-- Floating badges -->
+          <div class="hero-float-badge badge-safe">
+            <div class="hero-float-badge-icon">
+              <svg viewBox="0 0 24 24" width="16" height="16" fill="#2aab6f"><path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4zm-2 16l-4-4 1.41-1.41L10 14.17l6.59-6.59L18 9l-8 8z"/></svg>
+            </div>
+            DOH Compliant
+          </div>
+          <div class="hero-float-badge badge-cold">
+            <div class="hero-float-badge-icon">
+              <svg viewBox="0 0 24 24" width="16" height="16" fill="#1a6fa8"><path d="M22 11h-4.17l3.24-3.24-1.41-1.42L15 11h-2V9l4.66-4.66-1.42-1.41L13 6.17V2h-2v4.17L7.76 2.93 6.34 4.34 11 9v2H9L4.34 6.34 2.93 7.76 6.17 11H2v2h4.17l-3.24 3.24 1.41 1.42L9 13h2v2l-4.66 4.66 1.42 1.41L11 17.83V22h2v-4.17l3.24 3.24 1.42-1.41L13 15v-2h2l4.66 4.66 1.41-1.42L17.83 13H22v-2z"/></svg>
+            </div>
+            Cold Chain Tracked
+          </div>
+
+          <div class="hero-card">
+            <div class="hero-card-header">
+              <div class="hero-card-icon">
+                <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 14H9V8h2v8zm4 0h-2V8h2v8z"/></svg>
+              </div>
+              <div>
+                <div class="hero-card-title">Milk Lifecycle Tracker</div>
+                <div class="hero-card-subtitle">Batch #MHB-2026-0429</div>
+              </div>
+            </div>
+
+            <div class="hero-process-step">
+              <div class="step-num done">1</div>
+              <div class="step-content">
+                <div class="step-label">Donor Screening</div>
+                <div class="step-desc">HIV, Hep B, Syphilis — Cleared</div>
+              </div>
+              <span class="step-status status-done">Done</span>
+            </div>
+
+            <div class="hero-process-step">
+              <div class="step-num done">2</div>
+              <div class="step-content">
+                <div class="step-label">Milk Collection</div>
+                <div class="step-desc">180 ml · QR labeled · −20°C</div>
+              </div>
+              <span class="step-status status-done">Done</span>
+            </div>
+
+            <div class="hero-process-step">
+              <div class="step-num">3</div>
+              <div class="step-content">
+                <div class="step-label">Pasteurization &amp; Testing</div>
+                <div class="step-desc">62.5°C · 30 min · Lab test pending</div>
+              </div>
+              <span class="step-status status-active">Active</span>
+            </div>
+
+            <div class="hero-process-step">
+              <div class="step-num">4</div>
+              <div class="step-content">
+                <div class="step-label">Safe Dispensing</div>
+                <div class="step-desc">Awaiting NICU prescription</div>
+              </div>
+              <span class="step-status status-pending">Pending</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ─── ABOUT SECTION ────────────────────────────────────────── -->
+  <section class="section section-alt" id="about" aria-labelledby="about-title">
+    <div class="container">
+      <div class="about-grid">
+        <!-- Left: Text -->
+        <div class="about-text">
+          <div class="section-header">
+            <h2 class="section-title" id="about-title">About the Makati Human Milk Bank</h2>
+            <div class="section-subtitle">
+              The Makati Human Milk Bank (MHMB) provides safe, pasteurized donor milk to premature and medically fragile infants who cannot receive their mother's own milk.
+            </div>
+          </div>
+
+          <p>
+            The HMBMS replaces manual logbook processes with a fully digital system covering every stage — from donor screening and QR-coded milk collection to pasteurization logging, inventory management, and chain-of-custody tracking.
+          </p>
+          <p>
+            Every process is designed to comply with the <strong>DOH Philippine Human Milk Banking Guidelines</strong> and to protect sensitive health information under the <strong>Data Privacy Act of 2012</strong>.
+          </p>
+          <p>
+            The system is built to be accessible to Barangay Health Workers, nurses, medical technologists, and community mothers — ensuring that even users with varying levels of digital literacy can navigate it with ease.
+          </p>
+
+          <div class="about-badges" role="list" aria-label="Compliance and compliance badges">
+            <span class="about-badge" role="listitem">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4z"/></svg>
+              DOH PHM Guidelines
+            </span>
+            <span class="about-badge" role="listitem">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M18 8h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2zm-6 9c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zm3.1-9H8.9V6c0-1.71 1.39-3.1 3.1-3.1 1.71 0 3.1 1.39 3.1 3.1v2z"/></svg>
+              Data Privacy Act 2012
+            </span>
+            <span class="about-badge" role="listitem">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/></svg>
+              QR Code Tracking
+            </span>
+            <span class="about-badge" role="listitem">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 3H4v10c0 2.21 1.79 4 4 4h6c2.21 0 4-1.79 4-4v-3h2c1.11 0 2-.89 2-2V5c0-1.11-.89-2-2-2zm0 5h-2V5h2v3zM4 19h16v2H4z"/></svg>
+              Paperless Processes
+            </span>
+          </div>
+        </div>
+
+        <!-- Right: Stat Cards -->
+        <div class="about-visual" role="list" aria-label="System capabilities">
+          <div class="about-stat-card reveal" role="listitem">
+            <div class="about-stat-icon blue">
+              <svg viewBox="0 0 24 24" width="24" height="24" fill="#1a6fa8" aria-hidden="true"><path d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z"/></svg>
+            </div>
+            <div class="about-stat-value">5</div>
+            <div class="about-stat-label">Supported User Roles</div>
+          </div>
+          <div class="about-stat-card reveal reveal-delay-1" role="listitem">
+            <div class="about-stat-icon green">
+              <svg viewBox="0 0 24 24" width="24" height="24" fill="#2aab6f" aria-hidden="true"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-7 3c1.93 0 3.5 1.57 3.5 3.5S13.93 13 12 13s-3.5-1.57-3.5-3.5S10.07 6 12 6zm7 13H5v-.23c0-.62.28-1.2.76-1.58C7.47 15.82 9.64 15 12 15s4.53.82 6.24 2.19c.48.38.76.97.76 1.58V19z"/></svg>
+            </div>
+            <div class="about-stat-value">3</div>
+            <div class="about-stat-label">Collection Programs</div>
+          </div>
+          <div class="about-stat-card reveal reveal-delay-2" role="listitem">
+            <div class="about-stat-icon teal">
+              <svg viewBox="0 0 24 24" width="24" height="24" fill="#0d9488" aria-hidden="true"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 14H9V8h2v8zm4 0h-2V8h2v8z"/></svg>
+            </div>
+            <div class="about-stat-value">10</div>
+            <div class="about-stat-label">System Modules Planned</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ─── HOW IT WORKS ──────────────────────────────────────────── -->
+  <section class="section" id="how" aria-labelledby="how-title">
+    <div class="container">
+      <div class="section-header" style="text-align:center; margin-bottom: 56px;">
+        <h2 class="section-title" id="how-title" style="margin-bottom: 12px;">How It Works</h2>
+        <p class="section-subtitle" style="margin: 0 auto;">
+          From the first donor health screening to the moment safe milk reaches a fragile infant — every step is digitally tracked and verified.
+        </p>
+      </div>
+
+      <div class="steps-grid" role="list" aria-label="Milk lifecycle steps">
+        <!-- Step 1 -->
+        <div class="step-card reveal" role="listitem">
+          <div class="step-number-wrap" aria-hidden="true">1</div>
+          <h3>Donor Screening</h3>
+          <p>
+            Prospective donors complete a digital health questionnaire. Blood tests are conducted for <strong>HIV, Hepatitis B, and Syphilis</strong>. The system automatically excludes any donor testing positive for HIV or Hepatitis B.
+          </p>
+          <span class="step-tag">Health &amp; Safety First</span>
+        </div>
+
+        <!-- Step 2 -->
+        <div class="step-card reveal reveal-delay-1" role="listitem">
+          <div class="step-number-wrap" aria-hidden="true">2</div>
+          <h3>Milk Collection</h3>
+          <p>
+            Enrolled donors express milk through our three programs. Each container is <strong>labeled with a unique QR code</strong> bearing donor name, date, time, and volume. Milk is stored immediately at <strong>−20°C</strong>.
+          </p>
+          <span class="step-tag">QR Labeled &amp; Cold-Stored</span>
+        </div>
+
+        <!-- Step 3 -->
+        <div class="step-card reveal reveal-delay-2" role="listitem">
+          <div class="step-number-wrap" aria-hidden="true">3</div>
+          <h3>Pasteurization &amp; Testing</h3>
+          <p>
+            Milk is pasteurized at exactly <strong>62.5°C for 30 minutes</strong> following the Holder Pasteurization method. Lab tests are conducted <em>before and after</em> pasteurization. Only PASS batches are cleared for dispensing.
+          </p>
+          <span class="step-tag">62.5°C · 30 min</span>
+        </div>
+
+        <!-- Step 4 -->
+        <div class="step-card reveal reveal-delay-3" role="listitem">
+          <div class="step-number-wrap" aria-hidden="true">4</div>
+          <h3>Safe Dispensing</h3>
+          <p>
+            Recipients submit a <strong>doctor's prescription</strong> through the portal. The system applies <strong>FIFO logic</strong> to select the oldest safe batch. A complete digital chain of custody is maintained from collection to delivery.
+          </p>
+          <span class="step-tag">Prescription-Based</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ─── PROGRAMS SECTION ──────────────────────────────────────── -->
+  <section class="section section-alt" id="programs" aria-labelledby="programs-title">
+    <div class="container">
+      <div class="section-header" style="text-align:center; margin-bottom: 56px;">
+        <h2 class="section-title" id="programs-title" style="margin-bottom: 12px;">Collection Programs</h2>
+        <p class="section-subtitle" style="margin: 0 auto;">
+          The MHMB runs three dedicated programs to reach donors where they are — in the community, at hospitals, and at home.
+        </p>
+      </div>
+
+      <div class="programs-grid" role="list" aria-label="MHMB collection programs">
+
+        <!-- Supsup Todo -->
+        <article class="program-card reveal" role="listitem">
+          <div class="program-icon-wrap" aria-hidden="true">🤝</div>
+          <h3>Supsup Todo</h3>
+          <span class="program-type-tag">Community-Based</span>
+          <p>
+            A mobile community outreach program that brings milk collection directly to barangay health centers and community sites. Designed for donors who cannot travel to the main facility. Barangay Health Workers log collection data via mobile device.
+          </p>
+          <div class="program-card-footer">
+            <a href="#" id="supsup-learn-more" aria-label="Learn more about Supsup Todo program">
+              Learn more <span aria-hidden="true">→</span>
+            </a>
+          </div>
+        </article>
+
+        <!-- Milky Way -->
+        <article class="program-card reveal reveal-delay-1" role="listitem">
+          <div class="program-icon-wrap" aria-hidden="true">🏥</div>
+          <h3>Milky Way</h3>
+          <span class="program-type-tag">Hospital-Based</span>
+          <p>
+            A hospital-based program serving premature babies confined in partner hospital NICUs. Milk is collected from hospital donors and delivered directly within the clinical setting, ensuring the shortest cold chain possible for the most vulnerable infants.
+          </p>
+          <div class="program-card-footer">
+            <a href="#" id="milkyway-learn-more" aria-label="Learn more about Milky Way program">
+              Learn more <span aria-hidden="true">→</span>
+            </a>
+          </div>
+        </article>
+
+        <!-- Mom's Act -->
+        <article class="program-card reveal reveal-delay-2" role="listitem">
+          <div class="program-icon-wrap" aria-hidden="true">🏠</div>
+          <h3>Mom's Act</h3>
+          <span class="program-type-tag">Household-Based</span>
+          <p>
+            A convenient household-based pickup service for pre-screened and enrolled donors. Scheduled pickups are coordinated through the HMBMS scheduling calendar, allowing donors to contribute from the comfort of their homes without disrupting their routines.
+          </p>
+          <div class="program-card-footer">
+            <a href="#" id="momsact-learn-more" aria-label="Learn more about Mom's Act program">
+              Learn more <span aria-hidden="true">→</span>
+            </a>
+          </div>
+        </article>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- ─── CONTACT / FOOTER ──────────────────────────────────────── -->
+  <footer class="contact-section" id="contact" role="contentinfo">
+    <div class="container">
+      <div class="contact-grid">
+
+        <!-- Brand column -->
+        <div class="contact-brand">
+          <div class="nav-brand" style="margin-bottom: 16px; pointer-events: none;">
+            <div class="nav-logo-icon" aria-hidden="true" style="background: rgba(255,255,255,0.12); border: 1px solid rgba(255,255,255,0.18);">
+              <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" style="fill:#fff;">
+                <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 14H9V8h2v8zm4 0h-2V8h2v8z"/>
+              </svg>
+            </div>
+            <div class="nav-brand-text">
+              <span class="nav-system-name">Human Milk Bank Management System</span>
+              <span class="nav-org-name">Makati Human Milk Bank (MHMB)</span>
+            </div>
+          </div>
+          <p class="contact-brand-desc">
+            Replacing paper-based processes with a fully digital, DOH-compliant milk bank management platform. Every drop of donated milk — safely tracked from donor to infant.
+          </p>
+        </div>
+
+        <!-- Contact Info -->
+        <div class="contact-col">
+          <h4>Contact Us</h4>
+          <div class="contact-info-item">
+            <svg class="contact-info-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>
+            <span>Makati City Health Office<br/>Makati City, Metro Manila<br/>Philippines</span>
+          </div>
+          <div class="contact-info-item">
+            <svg class="contact-info-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M6.62 10.79c1.44 2.83 3.76 5.14 6.59 6.59l2.2-2.2c.27-.27.67-.36 1.02-.24 1.12.37 2.33.57 3.57.57.55 0 1 .45 1 1V20c0 .55-.45 1-1 1-9.39 0-17-7.61-17-17 0-.55.45-1 1-1h3.5c.55 0 1 .45 1 1 0 1.25.2 2.45.57 3.57.11.35.03.74-.25 1.02l-2.2 2.2z"/></svg>
+            <span>(02) 8XXX-XXXX<br/>(placeholder contact number)</span>
+          </div>
+          <div class="contact-info-item">
+            <svg class="contact-info-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M20 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z"/></svg>
+            <span>milkbank@makati.gov.ph<br/>(placeholder email)</span>
+          </div>
+        </div>
+
+        <!-- Quick Links -->
+        <div class="contact-col">
+          <h4>Quick Links</h4>
+          <ul>
+            <li><a href="#home">Home</a></li>
+            <li><a href="#about">About MHMB</a></li>
+            <li><a href="#how">How It Works</a></li>
+            <li><a href="#programs">Programs</a></li>
+            <li><a href="login.html">Staff Login</a></li>
+            <li><a href="#">Donor Registration</a></li>
+            <li><a href="#">Request Milk</a></li>
+          </ul>
+        </div>
+
+      </div>
+
+      <!-- Footer Bottom Bar -->
+      <div class="footer-bottom">
+        <p>© 2026 Makati Human Milk Bank. All rights reserved. | Powered by HMBMS</p>
+        <div class="footer-compliance">
+          <span class="compliance-tag">DOH PHM Guidelines</span>
+          <span class="compliance-tag">Data Privacy Act 2012</span>
+          <span class="compliance-tag">CSS152P / SE2 — v1.1</span>
+        </div>
+      </div>
+    </div>
+  </footer>
+
+  <!-- ─── JAVASCRIPT ─────────────────────────────────────────────── -->
+  <script>
+    // ── Navbar scroll effect
+    const navbar = document.getElementById('main-navbar');
+    window.addEventListener('scroll', () => {
+      if (window.scrollY > 30) {
+        navbar.classList.add('scrolled');
+      } else {
+        navbar.classList.remove('scrolled');
+      }
+    });
+
+    // ── Mobile nav toggle
+    const navToggle = document.getElementById('nav-toggle');
+    const navLinks  = document.getElementById('nav-links');
+    navToggle.addEventListener('click', () => {
+      const isOpen = navLinks.classList.toggle('open');
+      navToggle.classList.toggle('open', isOpen);
+      navToggle.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+    });
+
+    // Close mobile nav on link click
+    navLinks.querySelectorAll('a').forEach(link => {
+      link.addEventListener('click', () => {
+        navLinks.classList.remove('open');
+        navToggle.classList.remove('open');
+        navToggle.setAttribute('aria-expanded', 'false');
+      });
+    });
+
+    // ── Active nav link on scroll
+    const sections = document.querySelectorAll('section[id], footer[id]');
+    const navItems = document.querySelectorAll('.nav-links a[href^="#"]');
+    const observerOptions = { rootMargin: '-40% 0px -50% 0px' };
+
+    const sectionObserver = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          const id = entry.target.getAttribute('id');
+          navItems.forEach(link => {
+            link.classList.toggle('active', link.getAttribute('href') === `#${id}`);
+          });
+        }
+      });
+    }, observerOptions);
+
+    sections.forEach(s => sectionObserver.observe(s));
+
+    // ── Scroll-reveal animation
+    const revealEls = document.querySelectorAll('.reveal');
+    const revealObserver = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          entry.target.classList.add('visible');
+          revealObserver.unobserve(entry.target);
+        }
+      });
+    }, { rootMargin: '0px 0px -60px 0px' });
+
+    revealEls.forEach(el => revealObserver.observe(el));
+  </script>
+</body>
+</html>
