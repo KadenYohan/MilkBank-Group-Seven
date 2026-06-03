@@ -1,0 +1,24 @@
+{
+  "name": "hmbms-backend",
+  "version": "1.0.0",
+  "description": "Human Milk Bank Management System - Backend Server",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node server.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "dependencies": {
+    "bcryptjs": "^3.0.3",
+    "better-sqlite3": "^12.10.0",
+    "cors": "^2.8.6",
+    "express": "^5.2.1",
+    "express-session": "^1.19.0",
+    "multer": "^2.1.1",
+    "qrcode": "^1.5.4",
+    "uuid": "^14.0.0"
+  }
+}

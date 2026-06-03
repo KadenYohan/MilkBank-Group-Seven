@@ -203,7 +203,7 @@
         <!-- Register link -->
         <p class="login-register-link">
           Are you a new donor?
-          <a href="#" id="register-donor-link" aria-label="Register as a new donor">Register here</a>
+          <a href="register.html" id="register-donor-link" aria-label="Register as a new donor">Register here</a>
         </p>
       </div>
     </div>
@@ -235,9 +235,9 @@
       toggleBtn.setAttribute('aria-label', isHidden ? 'Hide password' : 'Show password');
     });
 
-    // ── Basic client-side validation feedback (form is non-functional — placeholder)
+    // ── Basic client-side validation feedback + BACKEND LOGIN
     const loginForm = document.getElementById('login-form');
-    loginForm.addEventListener('submit', (e) => {
+    loginForm.addEventListener('submit', async (e) => {
       e.preventDefault();
 
       const username = document.getElementById('username-input').value.trim();
@@ -254,19 +254,42 @@
         return;
       }
 
-      // Placeholder — backend routing in Stage 2
+      // Submit to backend
       const btn = document.getElementById('login-submit-btn');
       btn.textContent = 'Signing in…';
       btn.disabled = true;
-      setTimeout(() => {
+
+      try {
+        const res = await fetch('/api/auth/login', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ username, password })
+        });
+        const data = await res.json();
+
+        if (data.success) {
+          btn.textContent = '✓ Success! Redirecting...';
+          setTimeout(() => {
+            window.location.href = data.redirect || '/dashboard';
+          }, 500);
+        } else {
+          btn.innerHTML = `
+            <svg viewBox="0 0 24 24" width="18" height="18" fill="#fff" aria-hidden="true">
+              <path d="M11 7L9.6 8.4l2.6 2.6H2v2h10.2l-2.6 2.6L11 17l5-5-5-5zm9 12h-8v2h8c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2h-8v2h8v14z"/>
+            </svg>
+            Login`;
+          btn.disabled = false;
+          alert(data.error || 'Login failed. Please check your credentials.');
+        }
+      } catch (err) {
         btn.innerHTML = `
           <svg viewBox="0 0 24 24" width="18" height="18" fill="#fff" aria-hidden="true">
             <path d="M11 7L9.6 8.4l2.6 2.6H2v2h10.2l-2.6 2.6L11 17l5-5-5-5zm9 12h-8v2h8c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2h-8v2h8v14z"/>
           </svg>
           Login`;
         btn.disabled = false;
-        alert('⚠️ Backend not yet connected. This is Stage 1 — login routing will be implemented in Stage 2.');
-      }, 800);
+        alert('Connection error. Make sure the server is running on port 3000.');
+      }
     });
 
     // Reset error border on input

@@ -1,0 +1,20 @@
+# Dependency directories
+node_modules/
+
+# SQLite databases
+*.db
+*.db-journal
+*.db-shm
+*.db-wal
+
+# Log files
+*.log
+
+# OS metadata
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Ignore user uploads but keep the folder structure
+hmbms/backend/uploads/*
+!hmbms/backend/uploads/.gitkeep

@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="Register as a new donor with the Makati Human Milk Bank." />
+  <title>Donor Registration — HMBMS</title>
+  <link rel="stylesheet" href="assets/css/style.css" />
+  <link rel="stylesheet" href="assets/css/dashboard.css" />
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🍼</text></svg>" />
+</head>
+<body class="login-page">
+
+  <nav class="login-navbar" aria-label="Registration page navigation">
+    <div class="nav-inner">
+      <a href="index.html" class="nav-brand login-nav-brand">
+        <div class="nav-logo-icon">
+          <svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 14H9V8h2v8zm4 0h-2V8h2v8z"/></svg>
+        </div>
+        <div class="nav-brand-text">
+          <span class="nav-system-name">HMBMS</span>
+          <span class="nav-org-name">Makati Human Milk Bank</span>
+        </div>
+      </a>
+      <a href="login.html" class="login-back-home">
+        <svg viewBox="0 0 24 24"><path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/></svg>
+        Back to Login
+      </a>
+    </div>
+  </nav>
+
+  <main class="login-page-wrap">
+    <div class="login-container">
+      <div class="login-panel-left">
+        <div class="login-left-top">
+          <div class="login-left-logo">
+            <div class="login-left-logo-icon">
+              <svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 14H9V8h2v8zm4 0h-2V8h2v8z"/></svg>
+            </div>
+            <div class="login-left-logo-text">
+              <span class="nav-system-name">HMBMS</span>
+              <span class="nav-org-name">Makati Human Milk Bank</span>
+            </div>
+          </div>
+          <h2 class="login-left-headline">Become a<br/>Milk Donor Today</h2>
+          <p class="login-left-desc">
+            Join the MHMB donor community and help provide safe, pasteurized milk to premature and medically fragile infants.
+          </p>
+        </div>
+        <div class="login-left-bottom">
+          <p style="font-size:0.72rem;font-weight:700;color:rgba(255,255,255,0.40);letter-spacing:0.08em;text-transform:uppercase;margin-bottom:12px;">
+            What Happens Next
+          </p>
+          <div class="login-role-list">
+            <div class="login-role-item"><span class="role-dot admin"></span>Register your account</div>
+            <div class="login-role-item"><span class="role-dot nurse"></span>Complete health questionnaire</div>
+            <div class="login-role-item"><span class="role-dot medtech"></span>Undergo blood screening (HIV, Hep B)</div>
+            <div class="login-role-item"><span class="role-dot donor"></span>Get approved and start donating</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="login-panel-right" style="overflow-y:auto;">
+        <h1 class="login-form-title">Create Donor Account</h1>
+        <p class="login-form-subtitle">Fill in your details to register as a new donor.</p>
+
+        <form id="register-form" novalidate>
+          <div class="form-group">
+            <label class="form-label" for="reg-username">Username <span class="required-star">*</span></label>
+            <div class="input-wrap">
+              <input class="form-input" type="text" id="reg-username" required placeholder="Choose a username" autocomplete="username" />
+              <svg class="input-icon" viewBox="0 0 24 24"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="reg-password">Password <span class="required-star">*</span></label>
+            <div class="input-wrap">
+              <input class="form-input" type="password" id="reg-password" required placeholder="Create a password" autocomplete="new-password" />
+              <svg class="input-icon" viewBox="0 0 24 24"><path d="M18 8h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2zm-6 9c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zm3.1-9H8.9V6c0-1.71 1.39-3.1 3.1-3.1 1.71 0 3.1 1.39 3.1 3.1v2z"/></svg>
+            </div>
+          </div>
+
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+            <div class="form-group">
+              <label class="form-label" for="reg-fname">First Name <span class="required-star">*</span></label>
+              <div class="input-wrap">
+                <input class="form-input" type="text" id="reg-fname" required placeholder="First name" />
+              </div>
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="reg-lname">Last Name <span class="required-star">*</span></label>
+              <div class="input-wrap">
+                <input class="form-input" type="text" id="reg-lname" required placeholder="Last name" />
+              </div>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="reg-email">Email</label>
+            <div class="input-wrap">
+              <input class="form-input" type="email" id="reg-email" placeholder="Your email address" />
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="reg-phone">Phone Number</label>
+            <div class="input-wrap">
+              <input class="form-input" type="tel" id="reg-phone" placeholder="09XX-XXX-XXXX" />
+            </div>
+          </div>
+
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+            <div class="form-group">
+              <label class="form-label" for="reg-bdate">Birth Date</label>
+              <div class="input-wrap">
+                <input class="form-input" type="date" id="reg-bdate" />
+              </div>
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="reg-blood">Blood Type</label>
+              <div class="input-wrap">
+                <select class="form-input" id="reg-blood">
+                  <option value="">Select...</option>
+                  <option value="A+">A+</option><option value="A-">A-</option>
+                  <option value="B+">B+</option><option value="B-">B-</option>
+                  <option value="AB+">AB+</option><option value="AB-">AB-</option>
+                  <option value="O+">O+</option><option value="O-">O-</option>
+                </select>
+              </div>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="reg-address">Home Address</label>
+            <div class="input-wrap">
+              <input class="form-input" type="text" id="reg-address" placeholder="Your home address" />
+            </div>
+          </div>
+
+          <button type="submit" class="btn-login" id="register-btn">
+            <svg viewBox="0 0 24 24"><path d="M15 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm-9-2V7H4v3H1v2h3v3h2v-3h3v-2H6zm9 4c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>
+            Register as Donor
+          </button>
+        </form>
+
+        <p class="login-register-link" style="margin-top:16px;">
+          Already have an account? <a href="login.html">Login here</a>
+        </p>
+      </div>
+    </div>
+  </main>
+
+  <footer class="login-footer">
+    <p>© 2026 Makati Human Milk Bank | Powered by HMBMS | DOH PHM Guidelines Compliant | Data Privacy Act 2012</p>
+  </footer>
+
+  <script>
+    document.getElementById('register-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const btn = document.getElementById('register-btn');
+      btn.textContent = 'Registering...';
+      btn.disabled = true;
+
+      try {
+        const res = await fetch('/api/auth/register', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            username: document.getElementById('reg-username').value.trim(),
+            password: document.getElementById('reg-password').value,
+            first_name: document.getElementById('reg-fname').value.trim(),
+            last_name: document.getElementById('reg-lname').value.trim(),
+            email: document.getElementById('reg-email').value.trim(),
+            phone: document.getElementById('reg-phone').value.trim(),
+            birth_date: document.getElementById('reg-bdate').value,
+            blood_type: document.getElementById('reg-blood').value,
+            home_address: document.getElementById('reg-address').value.trim()
+          })
+        });
+        const data = await res.json();
+
+        if (data.success) {
+          alert('✅ ' + data.message + '\nYour Donor ID: ' + data.donor_id);
+          window.location.href = '/login.html';
+        } else {
+          alert('❌ ' + (data.error || 'Registration failed.'));
+          btn.textContent = 'Register as Donor';
+          btn.disabled = false;
+        }
+      } catch (err) {
+        alert('Connection error. Make sure the server is running.');
+        btn.textContent = 'Register as Donor';
+        btn.disabled = false;
+      }
+    });
+  </script>
+</body>
+</html>
