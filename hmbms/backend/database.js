@@ -1,269 +1,244 @@
 // ============================================================
-// HMBMS — Database Schema & Initialization
-// Uses better-sqlite3 for local development
-// Schema mirrors MySQL structure for production deployment
+// HMBMS — Database Schema & Initialization (PostgreSQL)
+// Schema mirrors original structure for production deployment
 // ============================================================
 
-const Database = require('better-sqlite3');
 const bcrypt = require('bcryptjs');
-const path = require('path');
 const { v4: uuidv4 } = require('uuid');
+const db = require('./db');
 
-const DB_PATH = path.join(__dirname, 'hmbms.db');
-
-function initDatabase() {
-  const db = new Database(DB_PATH);
-
-  // Enable WAL mode for better concurrent performance
-  db.pragma('journal_mode = WAL');
-  db.pragma('foreign_keys = ON');
-
+async function initDatabase() {
   // ── Users Table ──────────────────────────────────────────
-  db.exec(`
+  await db.query(`
     CREATE TABLE IF NOT EXISTS users (
-      id INTEGER PRIMARY KEY AUTOINCREMENT,
-      user_id TEXT UNIQUE NOT NULL,
-      username TEXT UNIQUE NOT NULL,
-      password_hash TEXT NOT NULL,
-      role TEXT NOT NULL CHECK(role IN ('admin','medtech','nurse','donor','recipient')),
-      first_name TEXT NOT NULL,
-      last_name TEXT NOT NULL,
-      email TEXT,
-      phone TEXT,
-      status TEXT DEFAULT 'active' CHECK(status IN ('active','inactive','suspended')),
-      created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-      updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
+      id SERIAL PRIMARY KEY,
+      user_id VARCHAR(255) UNIQUE NOT NULL,
+      username VARCHAR(255) UNIQUE NOT NULL,
+      password_hash VARCHAR(255) NOT NULL,
+      role VARCHAR(50) NOT NULL CHECK(role IN ('admin','medtech','nurse','donor','recipient')),
+      first_name VARCHAR(255) NOT NULL,
+      last_name VARCHAR(255) NOT NULL,
+      email VARCHAR(255),
+      phone VARCHAR(50),
+      status VARCHAR(50) DEFAULT 'active' CHECK(status IN ('active','inactive','suspended')),
+      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+      updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
     );
   `);
 
   // ── Audit Trail (Immutable — INSERT only) ────────────────
-  db.exec(`
+  await db.query(`
     CREATE TABLE IF NOT EXISTS audit_trail (
-      id INTEGER PRIMARY KEY AUTOINCREMENT,
-      user_id TEXT NOT NULL,
-      username TEXT,
-      action TEXT NOT NULL,
+      id SERIAL PRIMARY KEY,
+      user_id VARCHAR(255) NOT NULL,
+      username VARCHAR(255),
+      action VARCHAR(255) NOT NULL,
       details TEXT,
-      ip_address TEXT,
-      timestamp DATETIME DEFAULT CURRENT_TIMESTAMP
+      ip_address VARCHAR(50),
+      timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP
     );
   `);
 
   // ── Donors Table ─────────────────────────────────────────
-  db.exec(`
+  await db.query(`
     CREATE TABLE IF NOT EXISTS donors (
-      id INTEGER PRIMARY KEY AUTOINCREMENT,
-      donor_id TEXT UNIQUE NOT NULL,
-      user_id TEXT UNIQUE NOT NULL,
-      first_name TEXT NOT NULL,
-      last_name TEXT NOT NULL,
+      id SERIAL PRIMARY KEY,
+      donor_id VARCHAR(255) UNIQUE NOT NULL,
+      user_id VARCHAR(255) UNIQUE NOT NULL REFERENCES users(user_id) ON DELETE CASCADE,
+      first_name VARCHAR(255) NOT NULL,
+      last_name VARCHAR(255) NOT NULL,
       birth_date DATE,
-      contact_number TEXT,
+      contact_number VARCHAR(50),
       home_address TEXT,
-      blood_type TEXT CHECK(blood_type IN ('A+','A-','B+','B-','AB+','AB-','O+','O-','')),
-      hiv_result TEXT DEFAULT '' CHECK(hiv_result IN ('POSITIVE','NEGATIVE','')),
-      hep_b_result TEXT DEFAULT '' CHECK(hep_b_result IN ('POSITIVE','NEGATIVE','')),
-      syphilis_result TEXT DEFAULT '' CHECK(syphilis_result IN ('POSITIVE','NEGATIVE','')),
-      physician_approval TEXT DEFAULT 'PENDING' CHECK(physician_approval IN ('APPROVED','EXCLUDED','PENDING')),
+      blood_type VARCHAR(10) CHECK(blood_type IN ('A+','A-','B+','B-','AB+','AB-','O+','O-','')),
+      hiv_result VARCHAR(50) DEFAULT '' CHECK(hiv_result IN ('POSITIVE','NEGATIVE','')),
+      hep_b_result VARCHAR(50) DEFAULT '' CHECK(hep_b_result IN ('POSITIVE','NEGATIVE','')),
+      syphilis_result VARCHAR(50) DEFAULT '' CHECK(syphilis_result IN ('POSITIVE','NEGATIVE','')),
+      physician_approval VARCHAR(50) DEFAULT 'PENDING' CHECK(physician_approval IN ('APPROVED','EXCLUDED','PENDING')),
       screening_date DATE,
-      screening_status TEXT DEFAULT 'PENDING' CHECK(screening_status IN ('PENDING','APPROVED','EXCLUDED')),
+      screening_status VARCHAR(50) DEFAULT 'PENDING' CHECK(screening_status IN ('PENDING','APPROVED','EXCLUDED')),
       questionnaire_completed INTEGER DEFAULT 0,
       enrollment_date DATE,
       notes TEXT,
-      created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-      FOREIGN KEY (user_id) REFERENCES users(user_id)
+      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
     );
   `);
 
   // ── Screening Records ────────────────────────────────────
-  db.exec(`
+  await db.query(`
     CREATE TABLE IF NOT EXISTS screening_records (
-      id INTEGER PRIMARY KEY AUTOINCREMENT,
-      donor_id TEXT NOT NULL,
-      screened_by TEXT NOT NULL,
-      hiv_result TEXT NOT NULL CHECK(hiv_result IN ('POSITIVE','NEGATIVE')),
-      hep_b_result TEXT NOT NULL CHECK(hep_b_result IN ('POSITIVE','NEGATIVE')),
-      syphilis_result TEXT NOT NULL CHECK(syphilis_result IN ('POSITIVE','NEGATIVE')),
+      id SERIAL PRIMARY KEY,
+      donor_id VARCHAR(255) NOT NULL REFERENCES donors(donor_id) ON DELETE CASCADE,
+      screened_by VARCHAR(255) NOT NULL REFERENCES users(user_id),
+      hiv_result VARCHAR(50) NOT NULL CHECK(hiv_result IN ('POSITIVE','NEGATIVE')),
+      hep_b_result VARCHAR(50) NOT NULL CHECK(hep_b_result IN ('POSITIVE','NEGATIVE')),
+      syphilis_result VARCHAR(50) NOT NULL CHECK(syphilis_result IN ('POSITIVE','NEGATIVE')),
       physician_notes TEXT,
       screening_date DATE NOT NULL,
-      result TEXT NOT NULL CHECK(result IN ('APPROVED','EXCLUDED')),
-      created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-      FOREIGN KEY (donor_id) REFERENCES donors(donor_id),
-      FOREIGN KEY (screened_by) REFERENCES users(user_id)
+      result VARCHAR(50) NOT NULL CHECK(result IN ('APPROVED','EXCLUDED')),
+      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
     );
   `);
 
   // ── Milk Donations ──────────────────────────────────────
-  db.exec(`
+  await db.query(`
     CREATE TABLE IF NOT EXISTS milk_donations (
-      id INTEGER PRIMARY KEY AUTOINCREMENT,
-      donation_id TEXT UNIQUE NOT NULL,
-      donor_id TEXT NOT NULL,
+      id SERIAL PRIMARY KEY,
+      donation_id VARCHAR(255) UNIQUE NOT NULL,
+      donor_id VARCHAR(255) NOT NULL REFERENCES donors(donor_id) ON DELETE CASCADE,
       donation_date DATE NOT NULL,
       expressed_date DATE,
       volume_ml REAL NOT NULL CHECK(volume_ml > 0),
-      recorded_by TEXT NOT NULL,
+      recorded_by VARCHAR(255) NOT NULL REFERENCES users(user_id),
       qr_code TEXT,
       label_data TEXT,
-      storage_status TEXT DEFAULT 'RAW' CHECK(storage_status IN ('RAW','STORED','ASSIGNED_TO_BATCH','PASTEURIZED','DISPENSED','EXPIRED','QUARANTINED')),
-      freezer_location TEXT,
+      storage_status VARCHAR(50) DEFAULT 'RAW' CHECK(storage_status IN ('RAW','STORED','ASSIGNED_TO_BATCH','PASTEURIZED','DISPENSED','EXPIRED','QUARANTINED')),
+      freezer_location VARCHAR(255),
       storage_temp REAL DEFAULT -20,
-      storage_timestamp DATETIME,
-      created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-      FOREIGN KEY (donor_id) REFERENCES donors(donor_id),
-      FOREIGN KEY (recorded_by) REFERENCES users(user_id)
+      storage_timestamp TIMESTAMP,
+      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
     );
   `);
 
   // ── Pasteurization Batches ──────────────────────────────
-  db.exec(`
+  await db.query(`
     CREATE TABLE IF NOT EXISTS pasteurization_batches (
-      id INTEGER PRIMARY KEY AUTOINCREMENT,
-      batch_id TEXT UNIQUE NOT NULL,
-      start_time DATETIME,
-      end_time DATETIME,
+      id SERIAL PRIMARY KEY,
+      batch_id VARCHAR(255) UNIQUE NOT NULL,
+      start_time TIMESTAMP,
+      end_time TIMESTAMP,
       temperature REAL,
       duration_minutes REAL,
-      technician_id TEXT,
-      technician_name TEXT,
-      pre_test_result TEXT DEFAULT '' CHECK(pre_test_result IN ('PASS','FAIL','')),
-      post_test_result TEXT DEFAULT '' CHECK(post_test_result IN ('PASS','FAIL','')),
-      pre_bacterial_count TEXT,
-      post_bacterial_count TEXT,
-      batch_status TEXT DEFAULT 'PENDING' CHECK(batch_status IN ('PENDING','IN_PROGRESS','TESTING','PASS','FAIL','LOCKED','QUARANTINED','DISPENSED')),
+      technician_id VARCHAR(255) REFERENCES users(user_id),
+      technician_name VARCHAR(255),
+      pre_test_result VARCHAR(50) DEFAULT '' CHECK(pre_test_result IN ('PASS','FAIL','')),
+      post_test_result VARCHAR(50) DEFAULT '' CHECK(post_test_result IN ('PASS','FAIL','')),
+      pre_bacterial_count VARCHAR(255),
+      post_bacterial_count VARCHAR(255),
+      batch_status VARCHAR(50) DEFAULT 'PENDING' CHECK(batch_status IN ('PENDING','IN_PROGRESS','TESTING','PASS','FAIL','LOCKED','QUARANTINED','DISPENSED')),
       thaw_confirmed INTEGER DEFAULT 0,
       laminar_flow_confirmed INTEGER DEFAULT 0,
-      storage_location TEXT,
+      storage_location VARCHAR(255),
       expiration_date DATE,
       notes TEXT,
-      created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-      updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-      FOREIGN KEY (technician_id) REFERENCES users(user_id)
+      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+      updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
     );
   `);
 
   // ── Batch-Donation Link (many-to-many) ──────────────────
-  db.exec(`
+  await db.query(`
     CREATE TABLE IF NOT EXISTS batch_donations (
-      id INTEGER PRIMARY KEY AUTOINCREMENT,
-      batch_id TEXT NOT NULL,
-      donation_id TEXT NOT NULL,
-      FOREIGN KEY (batch_id) REFERENCES pasteurization_batches(batch_id),
-      FOREIGN KEY (donation_id) REFERENCES milk_donations(donation_id)
+      id SERIAL PRIMARY KEY,
+      batch_id VARCHAR(255) NOT NULL REFERENCES pasteurization_batches(batch_id) ON DELETE CASCADE,
+      donation_id VARCHAR(255) NOT NULL REFERENCES milk_donations(donation_id) ON DELETE CASCADE
     );
   `);
 
   // ── Recipients Table ────────────────────────────────────
-  db.exec(`
+  await db.query(`
     CREATE TABLE IF NOT EXISTS recipients (
-      id INTEGER PRIMARY KEY AUTOINCREMENT,
-      recipient_id TEXT UNIQUE NOT NULL,
-      user_id TEXT UNIQUE NOT NULL,
-      infant_name TEXT NOT NULL,
-      guardian_name TEXT NOT NULL,
-      hospital_name TEXT,
-      doctor_name TEXT,
+      id SERIAL PRIMARY KEY,
+      recipient_id VARCHAR(255) UNIQUE NOT NULL,
+      user_id VARCHAR(255) UNIQUE NOT NULL REFERENCES users(user_id) ON DELETE CASCADE,
+      infant_name VARCHAR(255) NOT NULL,
+      guardian_name VARCHAR(255) NOT NULL,
+      hospital_name VARCHAR(255),
+      doctor_name VARCHAR(255),
       diagnosis TEXT,
       birth_weight_grams REAL,
-      priority_status TEXT DEFAULT 'NORMAL' CHECK(priority_status IN ('NICU','MEDICALLY_FRAGILE','NORMAL')),
-      created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-      FOREIGN KEY (user_id) REFERENCES users(user_id)
+      priority_status VARCHAR(50) DEFAULT 'NORMAL' CHECK(priority_status IN ('NICU','MEDICALLY_FRAGILE','NORMAL')),
+      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
     );
   `);
 
   // ── Milk Requests ───────────────────────────────────────
-  db.exec(`
+  await db.query(`
     CREATE TABLE IF NOT EXISTS milk_requests (
-      id INTEGER PRIMARY KEY AUTOINCREMENT,
-      request_id TEXT UNIQUE NOT NULL,
-      recipient_id TEXT NOT NULL,
-      tracking_code TEXT UNIQUE NOT NULL,
+      id SERIAL PRIMARY KEY,
+      request_id VARCHAR(255) UNIQUE NOT NULL,
+      recipient_id VARCHAR(255) NOT NULL REFERENCES recipients(recipient_id) ON DELETE CASCADE,
+      tracking_code VARCHAR(255) UNIQUE NOT NULL,
       requested_volume_ml REAL NOT NULL CHECK(requested_volume_ml > 0),
-      prescription_file TEXT,
-      request_status TEXT DEFAULT 'PENDING' CHECK(request_status IN ('PENDING','APPROVED','READY','DISPENSED','CANCELLED')),
-      assigned_batch_id TEXT,
-      dispensed_by TEXT,
-      dispensed_at DATETIME,
+      prescription_file VARCHAR(255),
+      request_status VARCHAR(50) DEFAULT 'PENDING' CHECK(request_status IN ('PENDING','APPROVED','READY','DISPENSED','CANCELLED')),
+      assigned_batch_id VARCHAR(255) REFERENCES pasteurization_batches(batch_id),
+      dispensed_by VARCHAR(255),
+      dispensed_at TIMESTAMP,
       payment_confirmed INTEGER DEFAULT 0,
       payment_amount REAL DEFAULT 0,
-      payment_confirmed_by TEXT,
+      payment_confirmed_by VARCHAR(255),
       notes TEXT,
-      created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-      updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-      FOREIGN KEY (recipient_id) REFERENCES recipients(recipient_id),
-      FOREIGN KEY (assigned_batch_id) REFERENCES pasteurization_batches(batch_id)
+      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+      updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
     );
   `);
 
   // ── Chain of Custody ────────────────────────────────────
-  db.exec(`
+  await db.query(`
     CREATE TABLE IF NOT EXISTS chain_of_custody (
-      id INTEGER PRIMARY KEY AUTOINCREMENT,
-      reference_id TEXT NOT NULL,
-      reference_type TEXT NOT NULL CHECK(reference_type IN ('DONATION','BATCH','REQUEST')),
-      action TEXT NOT NULL,
-      performed_by TEXT NOT NULL,
-      location TEXT,
+      id SERIAL PRIMARY KEY,
+      reference_id VARCHAR(255) NOT NULL,
+      reference_type VARCHAR(50) NOT NULL CHECK(reference_type IN ('DONATION','BATCH','REQUEST')),
+      action VARCHAR(255) NOT NULL,
+      performed_by VARCHAR(255) NOT NULL REFERENCES users(user_id),
+      location VARCHAR(255),
       temperature REAL,
       notes TEXT,
-      timestamp DATETIME DEFAULT CURRENT_TIMESTAMP,
-      FOREIGN KEY (performed_by) REFERENCES users(user_id)
+      timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP
     );
   `);
 
   // ── Batch Recalls ───────────────────────────────────────
-  db.exec(`
+  await db.query(`
     CREATE TABLE IF NOT EXISTS batch_recalls (
-      id INTEGER PRIMARY KEY AUTOINCREMENT,
-      recall_id TEXT UNIQUE NOT NULL,
-      donor_id TEXT NOT NULL,
+      id SERIAL PRIMARY KEY,
+      recall_id VARCHAR(255) UNIQUE NOT NULL,
+      donor_id VARCHAR(255) NOT NULL REFERENCES donors(donor_id) ON DELETE CASCADE,
       reason TEXT NOT NULL,
-      initiated_by TEXT NOT NULL,
+      initiated_by VARCHAR(255) NOT NULL REFERENCES users(user_id),
       affected_batches TEXT,
-      status TEXT DEFAULT 'ACTIVE' CHECK(status IN ('ACTIVE','RESOLVED')),
-      created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-      FOREIGN KEY (donor_id) REFERENCES donors(donor_id),
-      FOREIGN KEY (initiated_by) REFERENCES users(user_id)
+      status VARCHAR(50) DEFAULT 'ACTIVE' CHECK(status IN ('ACTIVE','RESOLVED')),
+      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
     );
   `);
 
   // ── Appointments / Scheduling ───────────────────────────
-  db.exec(`
+  await db.query(`
     CREATE TABLE IF NOT EXISTS appointments (
-      id INTEGER PRIMARY KEY AUTOINCREMENT,
-      appointment_id TEXT UNIQUE NOT NULL,
-      donor_id TEXT,
-      program TEXT CHECK(program IN ('supsup_todo','milky_way','moms_act','general')),
+      id SERIAL PRIMARY KEY,
+      appointment_id VARCHAR(255) UNIQUE NOT NULL,
+      donor_id VARCHAR(255) REFERENCES donors(donor_id) ON DELETE SET NULL,
+      program VARCHAR(50) CHECK(program IN ('supsup_todo','milky_way','moms_act','general')),
       appointment_date DATE NOT NULL,
-      appointment_time TEXT,
-      location TEXT,
-      status TEXT DEFAULT 'SCHEDULED' CHECK(status IN ('SCHEDULED','COMPLETED','CANCELLED','NO_SHOW')),
+      appointment_time VARCHAR(50),
+      location VARCHAR(255),
+      status VARCHAR(50) DEFAULT 'SCHEDULED' CHECK(status IN ('SCHEDULED','COMPLETED','CANCELLED','NO_SHOW')),
       notes TEXT,
-      created_by TEXT,
-      created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-      FOREIGN KEY (donor_id) REFERENCES donors(donor_id),
-      FOREIGN KEY (created_by) REFERENCES users(user_id)
+      created_by VARCHAR(255),
+      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
     );
   `);
 
   // ── Notifications ───────────────────────────────────────
-  db.exec(`
+  await db.query(`
     CREATE TABLE IF NOT EXISTS notifications (
-      id INTEGER PRIMARY KEY AUTOINCREMENT,
-      notification_id TEXT UNIQUE NOT NULL,
-      user_id TEXT NOT NULL,
-      type TEXT NOT NULL CHECK(type IN ('MILK_READY','BATCH_RECALL','APPOINTMENT','ORDER_UPDATE','ALERT','SYSTEM')),
-      title TEXT NOT NULL,
+      id SERIAL PRIMARY KEY,
+      notification_id VARCHAR(255) UNIQUE NOT NULL,
+      user_id VARCHAR(255) NOT NULL REFERENCES users(user_id) ON DELETE CASCADE,
+      type VARCHAR(50) NOT NULL CHECK(type IN ('MILK_READY','BATCH_RECALL','APPOINTMENT','ORDER_UPDATE','ALERT','SYSTEM')),
+      title VARCHAR(255) NOT NULL,
       message TEXT NOT NULL,
       is_read INTEGER DEFAULT 0,
-      created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-      FOREIGN KEY (user_id) REFERENCES users(user_id)
+      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
     );
   `);
 
   // ── Seed Default Users ──────────────────────────────────
-  const userCount = db.prepare('SELECT COUNT(*) as count FROM users').get();
-  if (userCount.count === 0) {
+  const userCountRes = await db.query('SELECT COUNT(*) as count FROM users');
+  const count = parseInt(userCountRes.rows[0].count, 10);
+  
+  if (count === 0) {
     const salt = bcrypt.genSaltSync(10);
 
     const seedUsers = [
@@ -319,60 +294,45 @@ function initDatabase() {
       }
     ];
 
-    const insertUser = db.prepare(`
-      INSERT INTO users (user_id, username, password_hash, role, first_name, last_name, email, phone)
-      VALUES (@user_id, @username, @password_hash, @role, @first_name, @last_name, @email, @phone)
-    `);
+    const client = await db.pool.connect();
+    try {
+      await client.query('BEGIN');
 
-    const insertDonor = db.prepare(`
-      INSERT INTO donors (donor_id, user_id, first_name, last_name, contact_number, blood_type, screening_status, questionnaire_completed, enrollment_date)
-      VALUES (@donor_id, @user_id, @first_name, @last_name, @contact_number, @blood_type, @screening_status, 1, DATE('now'))
-    `);
-
-    const insertRecipient = db.prepare(`
-      INSERT INTO recipients (recipient_id, user_id, infant_name, guardian_name, hospital_name, doctor_name, diagnosis, birth_weight_grams, priority_status)
-      VALUES (@recipient_id, @user_id, @infant_name, @guardian_name, @hospital_name, @doctor_name, @diagnosis, @birth_weight_grams, @priority_status)
-    `);
-
-    const transaction = db.transaction(() => {
       for (const user of seedUsers) {
-        insertUser.run(user);
+        await client.query(`
+          INSERT INTO users (user_id, username, password_hash, role, first_name, last_name, email, phone)
+          VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+        `, [user.user_id, user.username, user.password_hash, user.role, user.first_name, user.last_name, user.email, user.phone]);
 
         // Create donor profile for donor user
         if (user.role === 'donor') {
-          insertDonor.run({
-            donor_id: 'DNR-' + Date.now().toString(36).toUpperCase(),
-            user_id: user.user_id,
-            first_name: user.first_name,
-            last_name: user.last_name,
-            contact_number: user.phone,
-            blood_type: 'O+',
-            screening_status: 'APPROVED'
-          });
+          const donor_id = 'DNR-' + Date.now().toString(36).toUpperCase();
+          await client.query(`
+            INSERT INTO donors (donor_id, user_id, first_name, last_name, contact_number, blood_type, screening_status, questionnaire_completed, enrollment_date)
+            VALUES ($1, $2, $3, $4, $5, $6, 'APPROVED', 1, CURRENT_DATE)
+          `, [donor_id, user.user_id, user.first_name, user.last_name, user.phone, 'O+']);
         }
 
         // Create recipient profile for recipient user
         if (user.role === 'recipient') {
-          insertRecipient.run({
-            recipient_id: 'RCP-' + Date.now().toString(36).toUpperCase(),
-            user_id: user.user_id,
-            infant_name: 'Baby Cruz',
-            guardian_name: user.first_name + ' ' + user.last_name,
-            hospital_name: 'Ospital ng Makati',
-            doctor_name: 'Dr. Juan Dela Cruz',
-            diagnosis: 'Premature birth - 32 weeks',
-            birth_weight_grams: 1800,
-            priority_status: 'NICU'
-          });
+          const recipient_id = 'RCP-' + Date.now().toString(36).toUpperCase();
+          await client.query(`
+            INSERT INTO recipients (recipient_id, user_id, infant_name, guardian_name, hospital_name, doctor_name, diagnosis, birth_weight_grams, priority_status)
+            VALUES ($1, $2, 'Baby Cruz', $3, 'Ospital ng Makati', 'Dr. Juan Dela Cruz', 'Premature birth - 32 weeks', 1800, 'NICU')
+          `, [recipient_id, user.user_id, user.first_name + ' ' + user.last_name]);
         }
       }
-    });
 
-    transaction();
-    console.log('✅ Default users seeded successfully');
+      await client.query('COMMIT');
+      console.log('✅ Default users seeded successfully in PostgreSQL');
+    } catch (e) {
+      await client.query('ROLLBACK');
+      console.error('❌ Error seeding default users in PostgreSQL:', e);
+      throw e;
+    } finally {
+      client.release();
+    }
   }
-
-  return db;
 }
 
 module.exports = { initDatabase };

@@ -10,6 +10,15 @@ node_modules/
 # Log files
 *.log
 
+# Environments
+.env
+.env.*
+
+# Nested duplicate folder
+MilkBank-Group-Seven/
+
+
+
 # OS metadata
 .DS_Store
 Thumbs.db

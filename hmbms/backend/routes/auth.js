@@ -1,5 +1,5 @@
 // ============================================================
-// HMBMS — Auth Routes (Stage 2)
+// HMBMS — Auth Routes (Stage 2 - PostgreSQL)
 // Login, Logout, Session Check
 // ============================================================
 
@@ -7,56 +7,67 @@ const express = require('express');
 const router = express.Router();
 const bcrypt = require('bcryptjs');
 const { logAudit, requireAuth } = require('../middleware');
+const db = require('../db');
 
 // POST /api/auth/login
-router.post('/login', (req, res) => {
+router.post('/login', async (req, res) => {
   const { username, password } = req.body;
 
   if (!username || !password) {
     return res.status(400).json({ error: 'Username and password are required.' });
   }
 
-  const db = global.db;
-  const user = db.prepare('SELECT * FROM users WHERE username = ? AND status = ?').get(username, 'active');
+  try {
+    const userRes = await db.query('SELECT * FROM users WHERE username = $1 AND status = $2', [username, 'active']);
+    const user = userRes.rows[0];
 
-  if (!user) {
-    logAudit('unknown', username, 'LOGIN_FAILED', 'Invalid username', req.ip);
-    return res.status(401).json({ error: 'Invalid username or password.' });
+    if (!user) {
+      await logAudit('unknown', username, 'LOGIN_FAILED', 'Invalid username', req.ip);
+      return res.status(401).json({ error: 'Invalid username or password.' });
+    }
+
+    const passwordMatch = bcrypt.compareSync(password, user.password_hash);
+    if (!passwordMatch) {
+      await logAudit(user.user_id, username, 'LOGIN_FAILED', 'Invalid password', req.ip);
+      return res.status(401).json({ error: 'Invalid username or password.' });
+    }
+
+    // Set session
+    const sessionUser = {
+      user_id: user.user_id,
+      username: user.username,
+      role: user.role,
+      first_name: user.first_name,
+      last_name: user.last_name,
+      email: user.email
+    };
+    req.session.user = sessionUser;
+
+    await logAudit(user.user_id, username, 'LOGIN_SUCCESS', `Role: ${user.role}`, req.ip);
+
+    res.json({
+      success: true,
+      user: sessionUser,
+      redirect: '/dashboard'
+    });
+  } catch (err) {
+    console.error('Error during login:', err);
+    res.status(500).json({ error: 'Internal server error' });
   }
-
-  const passwordMatch = bcrypt.compareSync(password, user.password_hash);
-  if (!passwordMatch) {
-    logAudit(user.user_id, username, 'LOGIN_FAILED', 'Invalid password', req.ip);
-    return res.status(401).json({ error: 'Invalid username or password.' });
-  }
-
-  // Set session
-  const sessionUser = {
-    user_id: user.user_id,
-    username: user.username,
-    role: user.role,
-    first_name: user.first_name,
-    last_name: user.last_name,
-    email: user.email
-  };
-  req.session.user = sessionUser;
-
-  logAudit(user.user_id, username, 'LOGIN_SUCCESS', `Role: ${user.role}`, req.ip);
-
-  res.json({
-    success: true,
-    user: sessionUser,
-    redirect: '/dashboard'
-  });
 });
 
 // POST /api/auth/logout
-router.post('/logout', (req, res) => {
-  if (req.session.user) {
-    logAudit(req.session.user.user_id, req.session.user.username, 'LOGOUT', '', req.ip);
+router.post('/logout', async (req, res) => {
+  try {
+    if (req.session.user) {
+      await logAudit(req.session.user.user_id, req.session.user.username, 'LOGOUT', '', req.ip);
+    }
+    req.session.destroy();
+    res.json({ success: true, redirect: '/login.html' });
+  } catch (err) {
+    console.error('Error during logout:', err);
+    res.status(500).json({ error: 'Internal server error' });
   }
-  req.session.destroy();
-  res.json({ success: true, redirect: '/login.html' });
 });
 
 // GET /api/auth/session
@@ -69,53 +80,67 @@ router.get('/session', (req, res) => {
 });
 
 // POST /api/auth/register (Donor self-registration)
-router.post('/register', (req, res) => {
+router.post('/register', async (req, res) => {
   const { username, password, first_name, last_name, email, phone, birth_date, blood_type, home_address } = req.body;
 
   if (!username || !password || !first_name || !last_name) {
     return res.status(400).json({ error: 'Required fields: username, password, first_name, last_name' });
   }
 
-  const db = global.db;
+  try {
+    // Check if username exists
+    const existingRes = await db.query('SELECT id FROM users WHERE username = $1', [username]);
+    const existing = existingRes.rows[0];
+    if (existing) {
+      return res.status(409).json({ error: 'Username already exists.' });
+    }
 
-  // Check if username exists
-  const existing = db.prepare('SELECT id FROM users WHERE username = ?').get(username);
-  if (existing) {
-    return res.status(409).json({ error: 'Username already exists.' });
+    const { v4: uuidv4 } = require('uuid');
+    const user_id = uuidv4();
+    const password_hash = bcrypt.hashSync(password, 10);
+    const donor_id = 'DNR-' + Date.now().toString(36).toUpperCase();
+
+    const client = await db.pool.connect();
+    try {
+      await client.query('BEGIN');
+      await client.query(`
+        INSERT INTO users (user_id, username, password_hash, role, first_name, last_name, email, phone)
+        VALUES ($1, $2, $3, 'donor', $4, $5, $6, $7)
+      `, [user_id, username, password_hash, first_name, last_name, email || '', phone || '']);
+
+      await client.query(`
+        INSERT INTO donors (donor_id, user_id, first_name, last_name, birth_date, contact_number, home_address, blood_type)
+        VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+      `, [donor_id, user_id, first_name, last_name, birth_date || null, phone || '', home_address || '', blood_type || '']);
+      await client.query('COMMIT');
+    } catch (err) {
+      await client.query('ROLLBACK');
+      throw err;
+    } finally {
+      client.release();
+    }
+
+    await logAudit(user_id, username, 'DONOR_REGISTERED', `Donor ID: ${donor_id}`, req.ip);
+
+    res.json({ success: true, donor_id, message: 'Registration successful! You can now log in.' });
+  } catch (err) {
+    console.error('Error during registration:', err);
+    res.status(500).json({ error: 'Internal server error' });
   }
-
-  const { v4: uuidv4 } = require('uuid');
-  const user_id = uuidv4();
-  const password_hash = bcrypt.hashSync(password, 10);
-  const donor_id = 'DNR-' + Date.now().toString(36).toUpperCase();
-
-  const transaction = db.transaction(() => {
-    db.prepare(`
-      INSERT INTO users (user_id, username, password_hash, role, first_name, last_name, email, phone)
-      VALUES (?, ?, ?, 'donor', ?, ?, ?, ?)
-    `).run(user_id, username, password_hash, first_name, last_name, email || '', phone || '');
-
-    db.prepare(`
-      INSERT INTO donors (donor_id, user_id, first_name, last_name, birth_date, contact_number, home_address, blood_type)
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?)
-    `).run(donor_id, user_id, first_name, last_name, birth_date || '', phone || '', home_address || '', blood_type || '');
-  });
-
-  transaction();
-
-  logAudit(user_id, username, 'DONOR_REGISTERED', `Donor ID: ${donor_id}`, req.ip);
-
-  res.json({ success: true, donor_id, message: 'Registration successful! You can now log in.' });
 });
 
 // GET /api/auth/users (Admin only — user management)
-router.get('/users', requireAuth, (req, res) => {
+router.get('/users', requireAuth, async (req, res) => {
   if (req.session.user.role !== 'admin') {
     return res.status(403).json({ error: 'Admin access only.' });
   }
-  const db = global.db;
-  const users = db.prepare('SELECT user_id, username, role, first_name, last_name, email, phone, status, created_at FROM users ORDER BY created_at DESC').all();
-  res.json(users);
+  try {
+    const usersRes = await db.query('SELECT user_id, username, role, first_name, last_name, email, phone, status, created_at FROM users ORDER BY created_at DESC');
+    res.json(usersRes.rows);
+  } catch (err) {
+    console.error('Error fetching users:', err);
+    res.status(500).json({ error: 'Internal server error' });
+  }
 });
 
 module.exports = router;

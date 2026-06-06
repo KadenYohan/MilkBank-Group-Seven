@@ -1,19 +1,20 @@
 // ============================================================
-// HMBMS — Main Server (Express)
+// HMBMS — Main Server (Express - PostgreSQL)
 // Human Milk Bank Management System
 // ============================================================
 
+require('dotenv').config();
 const express = require('express');
 const session = require('express-session');
 const path = require('path');
 const cors = require('cors');
+const db = require('./db');
 const { initDatabase } = require('./database');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// Initialize database
-const db = initDatabase();
+// Global reference for compatibility
 global.db = db;
 
 // ── Middleware ─────────────────────────────────────────────
@@ -83,6 +84,25 @@ app.get('/dashboard/{*path}', (req, res) => {
   res.sendFile(path.join(__dirname, '..', 'frontend', 'dashboard.html'));
 });
 
+// Test endpoint to return PostgreSQL database time
+app.get('/test', async (req, res) => {
+  try {
+    const result = await db.query('SELECT NOW()');
+    res.json({
+      success: true,
+      message: 'Connection to PostgreSQL is successful!',
+      time: result.rows[0].now
+    });
+  } catch (err) {
+    console.error('Error executing query inside GET /test:', err);
+    res.status(500).json({
+      success: false,
+      error: 'Database query failed',
+      details: err.message
+    });
+  }
+});
+
 // ── Error handling ────────────────────────────────────────
 app.use((err, req, res, next) => {
   console.error('Server Error:', err);
@@ -90,21 +110,35 @@ app.use((err, req, res, next) => {
 });
 
 // ── Start Server ──────────────────────────────────────────
-app.listen(PORT, () => {
-  console.log(`\n${'═'.repeat(56)}`);
-  console.log(`  🍼 HMBMS — Human Milk Bank Management System`);
-  console.log(`  🌐 Server running at http://localhost:${PORT}`);
-  console.log(`  📂 Frontend: http://localhost:${PORT}/index.html`);
-  console.log(`  🔐 Login:    http://localhost:${PORT}/login.html`);
-  console.log(`${'═'.repeat(56)}\n`);
-  console.log(`  Default Accounts:`);
-  console.log(`  ─────────────────────────────────────────`);
-  console.log(`  Admin:     admin / admin123`);
-  console.log(`  MedTech:   medtech1 / medtech123`);
-  console.log(`  Nurse:     nurse1 / nurse123`);
-  console.log(`  Donor:     donor1 / donor123`);
-  console.log(`  Recipient: recipient1 / recipient123`);
-  console.log(`  ─────────────────────────────────────────\n`);
-});
+async function startServer() {
+  try {
+    console.log('Initializing PostgreSQL database schema...');
+    await initDatabase();
+    console.log('Database schema initialization completed.');
+
+    app.listen(PORT, () => {
+      console.log(`\n${'═'.repeat(56)}`);
+      console.log(`  🍼 HMBMS — Human Milk Bank Management System`);
+      console.log(`  🌐 Server running at http://localhost:${PORT}`);
+      console.log(`  📂 Frontend: http://localhost:${PORT}/index.html`);
+      console.log(`  🔐 Login:    http://localhost:${PORT}/login.html`);
+      console.log(`  🧪 Test endpoint: http://localhost:${PORT}/test`);
+      console.log(`${'═'.repeat(56)}\n`);
+      console.log(`  Default Accounts:`);
+      console.log(`  ─────────────────────────────────────────`);
+      console.log(`  Admin:     admin / admin123`);
+      console.log(`  MedTech:   medtech1 / medtech123`);
+      console.log(`  Nurse:     nurse1 / nurse123`);
+      console.log(`  Donor:     donor1 / donor123`);
+      console.log(`  Recipient: recipient1 / recipient123`);
+      console.log(`  ─────────────────────────────────────────\n`);
+    });
+  } catch (err) {
+    console.error('Fatal: Failed to initialize database and start server:', err);
+    process.exit(1);
+  }
+}
+
+startServer();
 
 module.exports = app;

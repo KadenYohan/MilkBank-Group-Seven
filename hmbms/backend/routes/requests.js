@@ -1,5 +1,5 @@
 // ============================================================
-// HMBMS — Milk Request Routes (Stage 7)
+// HMBMS — Milk Request Routes (Stage 7 - PostgreSQL)
 // Request submission, tracking, payment
 // ============================================================
 
@@ -9,6 +9,7 @@ const { requireAuth, requireRole, logAudit } = require('../middleware');
 const { v4: uuidv4 } = require('uuid');
 const multer = require('multer');
 const path = require('path');
+const db = require('../db');
 
 // Multer config for prescription uploads
 const storage = multer.diskStorage({
@@ -18,161 +19,228 @@ const storage = multer.diskStorage({
 const upload = multer({ storage, limits: { fileSize: 5 * 1024 * 1024 } });
 
 // POST /api/requests/submit — Submit milk request (Recipient)
-router.post('/submit', requireAuth, requireRole('recipient'), upload.single('prescription'), (req, res) => {
+router.post('/submit', requireAuth, requireRole('recipient'), upload.single('prescription'), async (req, res) => {
   const { requested_volume_ml } = req.body;
 
   if (!requested_volume_ml || isNaN(requested_volume_ml) || Number(requested_volume_ml) <= 0) {
     return res.status(400).json({ error: 'Valid requested volume is required.' });
   }
 
-  const db = global.db;
-  const recipient = db.prepare('SELECT * FROM recipients WHERE user_id = ?').get(req.session.user.user_id);
-  if (!recipient) return res.status(404).json({ error: 'Recipient profile not found.' });
+  try {
+    const recipientRes = await db.query('SELECT * FROM recipients WHERE user_id = $1', [req.session.user.user_id]);
+    const recipient = recipientRes.rows[0];
+    if (!recipient) return res.status(404).json({ error: 'Recipient profile not found.' });
 
-  const request_id = 'REQ-' + Date.now().toString(36).toUpperCase();
-  const tracking_code = 'TRK-' + Math.random().toString(36).substring(2, 8).toUpperCase();
+    const request_id = 'REQ-' + Date.now().toString(36).toUpperCase();
+    const tracking_code = 'TRK-' + Math.random().toString(36).substring(2, 8).toUpperCase();
 
-  db.prepare(`
-    INSERT INTO milk_requests (request_id, recipient_id, tracking_code, requested_volume_ml, prescription_file, request_status)
-    VALUES (?, ?, ?, ?, ?, 'PENDING')
-  `).run(request_id, recipient.recipient_id, tracking_code,
-    Number(requested_volume_ml), req.file ? req.file.filename : '');
+    const client = await db.pool.connect();
+    try {
+      await client.query('BEGIN');
+      await client.query(`
+        INSERT INTO milk_requests (request_id, recipient_id, tracking_code, requested_volume_ml, prescription_file, request_status)
+        VALUES ($1, $2, $3, $4, $5, 'PENDING')
+      `, [request_id, recipient.recipient_id, tracking_code,
+        Number(requested_volume_ml), req.file ? req.file.filename : '']);
 
-  logAudit(req.session.user.user_id, req.session.user.username, 'MILK_REQUESTED',
-    `Request ${request_id}: ${requested_volume_ml}ml, tracking: ${tracking_code}`, req.ip);
+      // Notify admin
+      const adminsRes = await client.query("SELECT user_id FROM users WHERE role = 'admin'");
+      for (const admin of adminsRes.rows) {
+        await client.query(`
+          INSERT INTO notifications (notification_id, user_id, type, title, message)
+          VALUES ($1, $2, 'ORDER_UPDATE', 'New Milk Request', $3)
+        `, [uuidv4(), admin.user_id, `New milk request from ${recipient.guardian_name}: ${requested_volume_ml}ml. Tracking: ${tracking_code}`]);
+      }
+      await client.query('COMMIT');
+    } catch (err) {
+      await client.query('ROLLBACK');
+      throw err;
+    } finally {
+      client.release();
+    }
 
-  // Notify admin
-  const admins = db.prepare("SELECT user_id FROM users WHERE role = 'admin'").all();
-  for (const admin of admins) {
-    db.prepare(`
-      INSERT INTO notifications (notification_id, user_id, type, title, message)
-      VALUES (?, ?, 'ORDER_UPDATE', 'New Milk Request', ?)
-    `).run(uuidv4(), admin.user_id, `New milk request from ${recipient.guardian_name}: ${requested_volume_ml}ml. Tracking: ${tracking_code}`);
+    await logAudit(req.session.user.user_id, req.session.user.username, 'MILK_REQUESTED',
+      `Request ${request_id}: ${requested_volume_ml}ml, tracking: ${tracking_code}`, req.ip);
+
+    res.json({
+      success: true,
+      request_id,
+      tracking_code,
+      message: `Request submitted. Your tracking code is: ${tracking_code}`
+    });
+  } catch (err) {
+    console.error('Error submitting request:', err);
+    res.status(500).json({ error: 'Internal server error' });
   }
-
-  res.json({
-    success: true,
-    request_id,
-    tracking_code,
-    message: `Request submitted. Your tracking code is: ${tracking_code}`
-  });
 });
 
 // GET /api/requests/track/:code — Track order by tracking code
-router.get('/track/:code', (req, res) => {
-  const db = global.db;
-  const request = db.prepare(`
-    SELECT mr.request_id, mr.tracking_code, mr.requested_volume_ml, mr.request_status,
-           mr.created_at, mr.updated_at, mr.dispensed_at,
-           r.infant_name, r.hospital_name, r.priority_status
-    FROM milk_requests mr
-    JOIN recipients r ON mr.recipient_id = r.recipient_id
-    WHERE mr.tracking_code = ?
-  `).get(req.params.code);
+router.get('/track/:code', async (req, res) => {
+  try {
+    const requestRes = await db.query(`
+      SELECT mr.request_id, mr.tracking_code, mr.requested_volume_ml, mr.request_status,
+             mr.created_at, mr.updated_at, mr.dispensed_at,
+             r.infant_name, r.hospital_name, r.priority_status
+      FROM milk_requests mr
+      JOIN recipients r ON mr.recipient_id = r.recipient_id
+      WHERE mr.tracking_code = $1
+    `, [req.params.code]);
+    const request = requestRes.rows[0];
 
-  if (!request) return res.status(404).json({ error: 'Invalid tracking code.' });
+    if (!request) return res.status(404).json({ error: 'Invalid tracking code.' });
 
-  res.json(request);
+    res.json(request);
+  } catch (err) {
+    console.error('Error tracking request:', err);
+    res.status(500).json({ error: 'Internal server error' });
+  }
 });
 
 // GET /api/requests — List requests
-router.get('/', requireAuth, (req, res) => {
-  const db = global.db;
+router.get('/', requireAuth, async (req, res) => {
   let requests;
 
-  if (req.session.user.role === 'recipient') {
-    const recipient = db.prepare('SELECT recipient_id FROM recipients WHERE user_id = ?').get(req.session.user.user_id);
-    if (!recipient) return res.json([]);
-    requests = db.prepare(`
-      SELECT mr.*, r.infant_name, r.guardian_name, r.hospital_name, r.priority_status
-      FROM milk_requests mr
-      JOIN recipients r ON mr.recipient_id = r.recipient_id
-      WHERE mr.recipient_id = ?
-      ORDER BY mr.created_at DESC
-    `).all(recipient.recipient_id);
-  } else {
-    requests = db.prepare(`
-      SELECT mr.*, r.infant_name, r.guardian_name, r.hospital_name, r.priority_status
-      FROM milk_requests mr
-      JOIN recipients r ON mr.recipient_id = r.recipient_id
-      ORDER BY
-        CASE r.priority_status
-          WHEN 'NICU' THEN 1
-          WHEN 'MEDICALLY_FRAGILE' THEN 2
-          ELSE 3
-        END,
-        mr.created_at ASC
-    `).all();
-  }
+  try {
+    if (req.session.user.role === 'recipient') {
+      const recipientRes = await db.query('SELECT recipient_id FROM recipients WHERE user_id = $1', [req.session.user.user_id]);
+      const recipient = recipientRes.rows[0];
+      if (!recipient) return res.json([]);
+      const requestsRes = await db.query(`
+        SELECT mr.*, r.infant_name, r.guardian_name, r.hospital_name, r.priority_status
+        FROM milk_requests mr
+        JOIN recipients r ON mr.recipient_id = r.recipient_id
+        WHERE mr.recipient_id = $1
+        ORDER BY mr.created_at DESC
+      `, [recipient.recipient_id]);
+      requests = requestsRes.rows;
+    } else {
+      const requestsRes = await db.query(`
+        SELECT mr.*, r.infant_name, r.guardian_name, r.hospital_name, r.priority_status
+        FROM milk_requests mr
+        JOIN recipients r ON mr.recipient_id = r.recipient_id
+        ORDER BY
+          CASE r.priority_status
+            WHEN 'NICU' THEN 1
+            WHEN 'MEDICALLY_FRAGILE' THEN 2
+            ELSE 3
+          END,
+          mr.created_at ASC
+      `);
+      requests = requestsRes.rows;
+    }
 
-  res.json(requests);
+    res.json(requests);
+  } catch (err) {
+    console.error('Error listing requests:', err);
+    res.status(500).json({ error: 'Internal server error' });
+  }
 });
 
 // PUT /api/requests/:id/approve — Approve request (Admin, Nurse)
-router.put('/:id/approve', requireAuth, requireRole('admin', 'nurse'), (req, res) => {
-  const db = global.db;
-  db.prepare("UPDATE milk_requests SET request_status = 'APPROVED', updated_at = DATETIME('now') WHERE request_id = ?").run(req.params.id);
+router.put('/:id/approve', requireAuth, requireRole('admin', 'nurse'), async (req, res) => {
+  try {
+    const client = await db.pool.connect();
+    try {
+      await client.query('BEGIN');
+      await client.query("UPDATE milk_requests SET request_status = 'APPROVED', updated_at = CURRENT_TIMESTAMP WHERE request_id = $1", [req.params.id]);
 
-  const request = db.prepare('SELECT * FROM milk_requests WHERE request_id = ?').get(req.params.id);
-  if (request) {
-    const recipient = db.prepare('SELECT user_id FROM recipients WHERE recipient_id = ?').get(request.recipient_id);
-    if (recipient) {
-      db.prepare(`
-        INSERT INTO notifications (notification_id, user_id, type, title, message)
-        VALUES (?, ?, 'ORDER_UPDATE', 'Request Approved', ?)
-      `).run(uuidv4(), recipient.user_id, `Your milk request (${request.tracking_code}) has been approved.`);
+      const requestRes = await client.query('SELECT * FROM milk_requests WHERE request_id = $1', [req.params.id]);
+      const request = requestRes.rows[0];
+      if (request) {
+        const recipientRes = await client.query('SELECT user_id FROM recipients WHERE recipient_id = $1', [request.recipient_id]);
+        const recipient = recipientRes.rows[0];
+        if (recipient) {
+          await client.query(`
+            INSERT INTO notifications (notification_id, user_id, type, title, message)
+            VALUES ($1, $2, 'ORDER_UPDATE', 'Request Approved', $3)
+          `, [uuidv4(), recipient.user_id, `Your milk request (${request.tracking_code}) has been approved.`]);
+        }
+      }
+      await client.query('COMMIT');
+    } catch (err) {
+      await client.query('ROLLBACK');
+      throw err;
+    } finally {
+      client.release();
     }
-  }
 
-  logAudit(req.session.user.user_id, req.session.user.username, 'REQUEST_APPROVED', `Request ${req.params.id}`, req.ip);
-  res.json({ success: true, message: 'Request approved.' });
+    await logAudit(req.session.user.user_id, req.session.user.username, 'REQUEST_APPROVED', `Request ${req.params.id}`, req.ip);
+    res.json({ success: true, message: 'Request approved.' });
+  } catch (err) {
+    console.error('Error approving request:', err);
+    res.status(500).json({ error: 'Internal server error' });
+  }
 });
 
 // PUT /api/requests/:id/payment — Confirm payment (Admin, Nurse)
-router.put('/:id/payment', requireAuth, requireRole('admin', 'nurse'), (req, res) => {
+router.put('/:id/payment', requireAuth, requireRole('admin', 'nurse'), async (req, res) => {
   const { payment_amount } = req.body;
-  const db = global.db;
 
-  db.prepare(`
-    UPDATE milk_requests SET
-      payment_confirmed = 1,
-      payment_amount = ?,
-      payment_confirmed_by = ?,
-      updated_at = DATETIME('now')
-    WHERE request_id = ?
-  `).run(payment_amount || 0, req.session.user.user_id, req.params.id);
+  try {
+    await db.query(`
+      UPDATE milk_requests SET
+        payment_confirmed = 1,
+        payment_amount = $1,
+        payment_confirmed_by = $2,
+        updated_at = CURRENT_TIMESTAMP
+      WHERE request_id = $3
+    `, [payment_amount || 0, req.session.user.user_id, req.params.id]);
 
-  logAudit(req.session.user.user_id, req.session.user.username, 'PAYMENT_CONFIRMED',
-    `Request ${req.params.id}: ₱${payment_amount || 0}`, req.ip);
-  res.json({ success: true, message: 'Payment confirmed.' });
+    await logAudit(req.session.user.user_id, req.session.user.username, 'PAYMENT_CONFIRMED',
+      `Request ${req.params.id}: ₱${payment_amount || 0}`, req.ip);
+    res.json({ success: true, message: 'Payment confirmed.' });
+  } catch (err) {
+    console.error('Error confirming payment:', err);
+    res.status(500).json({ error: 'Internal server error' });
+  }
 });
 
 // PUT /api/requests/:id/ready — Mark as ready (Admin, Nurse)
-router.put('/:id/ready', requireAuth, requireRole('admin', 'nurse'), (req, res) => {
-  const db = global.db;
-  db.prepare("UPDATE milk_requests SET request_status = 'READY', updated_at = DATETIME('now') WHERE request_id = ?").run(req.params.id);
+router.put('/:id/ready', requireAuth, requireRole('admin', 'nurse'), async (req, res) => {
+  try {
+    const client = await db.pool.connect();
+    try {
+      await client.query('BEGIN');
+      await client.query("UPDATE milk_requests SET request_status = 'READY', updated_at = CURRENT_TIMESTAMP WHERE request_id = $1", [req.params.id]);
 
-  const request = db.prepare('SELECT * FROM milk_requests WHERE request_id = ?').get(req.params.id);
-  if (request) {
-    const recipient = db.prepare('SELECT user_id FROM recipients WHERE recipient_id = ?').get(request.recipient_id);
-    if (recipient) {
-      db.prepare(`
-        INSERT INTO notifications (notification_id, user_id, type, title, message)
-        VALUES (?, ?, 'MILK_READY', 'Milk Ready for Pickup', ?)
-      `).run(uuidv4(), recipient.user_id, `Your milk request (${request.tracking_code}) is ready for pickup/dispensing.`);
+      const requestRes = await client.query('SELECT * FROM milk_requests WHERE request_id = $1', [req.params.id]);
+      const request = requestRes.rows[0];
+      if (request) {
+        const recipientRes = await client.query('SELECT user_id FROM recipients WHERE recipient_id = $1', [request.recipient_id]);
+        const recipient = recipientRes.rows[0];
+        if (recipient) {
+          await client.query(`
+            INSERT INTO notifications (notification_id, user_id, type, title, message)
+            VALUES ($1, $2, 'MILK_READY', 'Milk Ready for Pickup', $3)
+          `, [uuidv4(), recipient.user_id, `Your milk request (${request.tracking_code}) is ready for pickup/dispensing.`]);
+        }
+      }
+      await client.query('COMMIT');
+    } catch (err) {
+      await client.query('ROLLBACK');
+      throw err;
+    } finally {
+      client.release();
     }
-  }
 
-  logAudit(req.session.user.user_id, req.session.user.username, 'REQUEST_READY', `Request ${req.params.id}`, req.ip);
-  res.json({ success: true, message: 'Request marked as ready.' });
+    await logAudit(req.session.user.user_id, req.session.user.username, 'REQUEST_READY', `Request ${req.params.id}`, req.ip);
+    res.json({ success: true, message: 'Request marked as ready.' });
+  } catch (err) {
+    console.error('Error marking request as ready:', err);
+    res.status(500).json({ error: 'Internal server error' });
+  }
 });
 
 // PUT /api/requests/:id/cancel — Cancel request
-router.put('/:id/cancel', requireAuth, (req, res) => {
-  const db = global.db;
-  db.prepare("UPDATE milk_requests SET request_status = 'CANCELLED', updated_at = DATETIME('now') WHERE request_id = ?").run(req.params.id);
-  logAudit(req.session.user.user_id, req.session.user.username, 'REQUEST_CANCELLED', `Request ${req.params.id}`, req.ip);
-  res.json({ success: true, message: 'Request cancelled.' });
+router.put('/:id/cancel', requireAuth, async (req, res) => {
+  try {
+    await db.query("UPDATE milk_requests SET request_status = 'CANCELLED', updated_at = CURRENT_TIMESTAMP WHERE request_id = $1", [req.params.id]);
+    await logAudit(req.session.user.user_id, req.session.user.username, 'REQUEST_CANCELLED', `Request ${req.params.id}`, req.ip);
+    res.json({ success: true, message: 'Request cancelled.' });
+  } catch (err) {
+    console.error('Error cancelling request:', err);
+    res.status(500).json({ error: 'Internal server error' });
+  }
 });
 
 module.exports = router;
