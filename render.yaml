@@ -1,0 +1,12 @@
+# Render Blueprint Configuration
+# Deploy by going to Render Dashboard -> New + -> Blueprint
+services:
+  - type: web
+    name: hmbms-server
+    runtime: node
+    plan: free
+    buildCommand: cd hmbms/backend && npm install
+    startCommand: cd hmbms/backend && node server.js
+    envVars:
+      - key: NODE_ENV
+        value: production
