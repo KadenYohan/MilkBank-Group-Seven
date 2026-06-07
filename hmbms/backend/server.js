@@ -24,13 +24,14 @@ app.use(express.urlencoded({ extended: true }));
 
 // Session management
 app.use(session({
-  secret: 'hmbms-secret-key-2026-makati-milkbank',
+  secret: process.env.SESSION_SECRET || 'hmbms-dev-secret-key-2026',
   resave: false,
   saveUninitialized: false,
   cookie: {
     maxAge: 24 * 60 * 60 * 1000, // 24 hours
     httpOnly: true,
-    sameSite: 'lax'
+    sameSite: 'lax',
+    secure: process.env.NODE_ENV === 'production'
   }
 }));
 
