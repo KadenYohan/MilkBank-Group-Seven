@@ -870,4 +870,61 @@ All required sections implemented:
 
 ---
 
-**Next:** Stage 2 — Authentication & Role-Based Access Control (RBAC)
+## Stage 1.5 to Stage 10 (Backend & Role Dashboards) — Completed
+
+**Date:** 2026-06-07  
+**Performed by:** Antigravity AI
+
+---
+
+### What Was Done
+
+#### 1. Mock Role Dashboards (Frontend)
+- Created 5 unique role-based HTML dashboards:
+  - `dashboard-admin.html`: Batch recalls, inventory, audit logs
+  - `dashboard-medtech.html`: Pasteurization logging, lab results, batch status
+  - `dashboard-nurse.html`: Donor screening queue, collection log, schedules
+  - `dashboard-donor.html`: Donor profile, donation history, appointments
+  - `dashboard-recipient.html`: Order tracking, recipient profile, order history
+- Updated `style.css` with a comprehensive dashboard design system (sidebars, navbars, KPI cards, tables, status chips).
+- Fixed `login.html` routing: Login now actually validates credentials and redirects to the appropriate role dashboard based on the logged-in user. Included an inline error message handling.
+
+#### 2. PostgreSQL Backend Integration (Stages 2-10)
+- Merged the full Node.js/Express backend that was completed previously on GitHub, which handles authentication, donors, batches, inventory, recalls, reports, and more.
+- Confirmed PostgreSQL migration in `hmbms/backend/db.js` and `hmbms/backend/database.js` with Render support.
+- Updated database seeding script to correctly populate default users.
+
+#### 3. Render Deployment Fixes
+- Updated `render.yaml` to automatically provision a free-tier PostgreSQL database (`hmbms-db`) and linked the `DATABASE_URL` to the web service automatically.
+- Added `SESSION_SECRET` generation to `render.yaml` and implemented it in `server.js` for secure production sessions.
+- Fixed a JS `errorMsg` variable bug in `login.html` that crashed the login form on failure.
+
+#### 4. Documentation & Credentials Sync
+- Synced the test accounts table in `login.html` to reflect the actual PostgreSQL seed accounts:
+  - `admin` / `admin123`
+  - `medtech1` / `medtech123`
+  - `nurse1` / `nurse123`
+  - `donor1` / `donor123`
+  - `recipient1` / `recipient123`
+- Updated the `README.md` with instructions on how to access the live Render server and the correct credentials.
+
+---
+
+### Files Created/Modified
+
+| File | Path |
+|---|---|
+| `dashboard-admin.html` | `hmbms/frontend/dashboard-admin.html` |
+| `dashboard-medtech.html` | `hmbms/frontend/dashboard-medtech.html` |
+| `dashboard-nurse.html` | `hmbms/frontend/dashboard-nurse.html` |
+| `dashboard-donor.html` | `hmbms/frontend/dashboard-donor.html` |
+| `dashboard-recipient.html` | `hmbms/frontend/dashboard-recipient.html` |
+| `login.html` | `hmbms/frontend/login.html` |
+| `style.css` | `hmbms/frontend/assets/css/style.css` |
+| `README.md` | `README.md` |
+| `render.yaml` | `render.yaml` |
+| `server.js` | `hmbms/backend/server.js` |
+
+---
+
+**Next:** Final Polish & Handoff
