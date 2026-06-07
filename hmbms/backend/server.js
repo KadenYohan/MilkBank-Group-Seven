@@ -14,6 +14,9 @@ const { initDatabase } = require('./database');
 const app = express();
 const PORT = process.env.PORT || 3000;
 
+// Trust first proxy (Render)
+app.set('trust proxy', 1);
+
 // Global reference for compatibility
 global.db = db;
 
