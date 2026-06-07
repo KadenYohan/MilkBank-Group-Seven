@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="robots" content="noindex, nofollow" />
+  <title>Recipient Dashboard — HMBMS</title>
+  <link rel="stylesheet" href="assets/css/style.css" />
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🍼</text></svg>" />
+</head>
+<body class="dashboard-page">
+
+  <nav class="dash-navbar" role="navigation">
+    <div class="dash-nav-inner">
+      <a href="index.html" class="nav-brand">
+        <div class="nav-logo-icon"><svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 14H9V8h2v8zm4 0h-2V8h2v8z"/></svg></div>
+        <div class="nav-brand-text">
+          <span class="nav-system-name">HMBMS</span>
+          <span class="nav-org-name">Makati Human Milk Bank</span>
+        </div>
+      </a>
+      <div class="dash-nav-right">
+        <span class="dash-role-badge recipient">Recipient</span>
+        <span class="dash-user-name">👤 Recipient User</span>
+        <a href="login.html" class="dash-logout-btn" id="recipient-logout-btn">Logout</a>
+      </div>
+    </div>
+  </nav>
+
+  <div class="dash-layout">
+    <aside class="dash-sidebar">
+      <nav class="dash-sidenav">
+        <a href="#myorders" class="dash-sidenav-item active">
+          <svg viewBox="0 0 24 24"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-5 14H7v-2h7v2zm3-4H7v-2h10v2zm0-4H7V7h10v2z"/></svg>
+          My Orders
+        </a>
+        <a href="#tracking" class="dash-sidenav-item">
+          <svg viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>
+          Track Order
+        </a>
+        <a href="#newrequest" class="dash-sidenav-item">
+          <svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm5 11h-4v4h-2v-4H7v-2h4V7h2v4h4v2z"/></svg>
+          Request Milk
+        </a>
+        <a href="#myprofile" class="dash-sidenav-item">
+          <svg viewBox="0 0 24 24"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>
+          My Profile
+        </a>
+      </nav>
+    </aside>
+
+    <main class="dash-main" id="main-content">
+
+      <section id="myorders" class="dash-section">
+        <div class="dash-section-header">
+          <div>
+            <h1 class="dash-section-title">My Milk Requests</h1>
+            <p class="dash-section-sub">Saturday, June 7, 2026 — Mock data (Stage 1 frontend preview)</p>
+          </div>
+          <button class="dash-btn dash-btn-primary" id="new-request-btn">
+            <svg viewBox="0 0 24 24" width="16" height="16" fill="#fff"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm5 11h-4v4h-2v-4H7v-2h4V7h2v4h4v2z"/></svg>
+            New Request
+          </button>
+        </div>
+
+        <!-- Order Status Alert -->
+        <div class="dash-alert ready-alert" role="alert">
+          <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor"><path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4zm-2 16l-4-4 1.41-1.41L10 14.17l6.59-6.59L18 9l-8 8z"/></svg>
+          <div>
+            <strong>🎉 Your order REQ-2026-003 is READY FOR PICKUP!</strong>
+            <span>Please bring your doctor's prescription and a valid ID. Cold-chain packaging will be provided.</span>
+          </div>
+        </div>
+
+        <!-- KPI Cards -->
+        <div class="dash-kpi-grid">
+          <div class="dash-kpi-card blue">
+            <div class="dash-kpi-icon"><svg viewBox="0 0 24 24"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-5 14H7v-2h7v2zm3-4H7v-2h10v2zm0-4H7V7h10v2z"/></svg></div>
+            <div class="dash-kpi-value">3</div>
+            <div class="dash-kpi-label">Total Requests Made</div>
+            <div class="dash-kpi-trend">Since registration</div>
+          </div>
+          <div class="dash-kpi-card green">
+            <div class="dash-kpi-icon"><svg viewBox="0 0 24 24"><path d="M20 6h-2.18c.07-.44.18-.88.18-1.36C18 2.5 15.5 0 12.36 0c-1.73 0-3.24.87-4.19 2.19L7 3 5.82 2.19C4.87.87 3.36 0 1.64 0H1v2h.64C2.56 2 3.4 2.5 3.96 3.19l1.5 1.96-.87.87C4.19 6.68 4 7.32 4 8H2c-1.1 0-2 .9-2 2v8c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2z"/></svg></div>
+            <div class="dash-kpi-value">550 ml</div>
+            <div class="dash-kpi-label">Total Milk Received</div>
+            <div class="dash-kpi-trend">Across all requests</div>
+          </div>
+          <div class="dash-kpi-card amber">
+            <div class="dash-kpi-icon"><svg viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg></div>
+            <div class="dash-kpi-value">TRK-9982</div>
+            <div class="dash-kpi-label">Active Tracking Code</div>
+            <div class="dash-kpi-trend">REQ-2026-003 · Ready</div>
+          </div>
+          <div class="dash-kpi-card teal">
+            <div class="dash-kpi-icon"><svg viewBox="0 0 24 24"><path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4zm-2 16l-4-4 1.41-1.41L10 14.17l6.59-6.59L18 9l-8 8z"/></svg></div>
+            <div class="dash-kpi-value">NICU</div>
+            <div class="dash-kpi-label">Priority Status</div>
+            <div class="dash-kpi-trend">High-priority beneficiary</div>
+          </div>
+        </div>
+
+        <!-- Order History Table -->
+        <div class="dash-card">
+          <div class="dash-card-header">
+            <h2 class="dash-card-title">My Request History</h2>
+          </div>
+          <div class="dash-table-wrap">
+            <table class="dash-table" aria-label="Recipient request history">
+              <thead>
+                <tr><th>Request ID</th><th>Date Submitted</th><th>Volume Req.</th><th>Prescription</th><th>Fee Paid</th><th>Tracking Code</th><th>Status</th></tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td><code>REQ-2026-003</code></td><td>Jun 5, 2026</td><td>200 ml</td>
+                  <td><span class="badge-pass">Uploaded</span></td>
+                  <td><span class="badge-pass">₱50 — Confirmed</span></td>
+                  <td><code>TRK-9982</code></td>
+                  <td><span class="status-chip ready">Ready for Pickup</span></td>
+                </tr>
+                <tr>
+                  <td><code>REQ-2026-002</code></td><td>Apr 14, 2026</td><td>180 ml</td>
+                  <td><span class="badge-pass">Uploaded</span></td>
+                  <td><span class="badge-pass">₱45 — Confirmed</span></td>
+                  <td><code>TRK-7741</code></td>
+                  <td><span class="status-chip dispensed">Dispensed</span></td>
+                </tr>
+                <tr>
+                  <td><code>REQ-2026-001</code></td><td>Feb 20, 2026</td><td>170 ml</td>
+                  <td><span class="badge-pass">Uploaded</span></td>
+                  <td><span class="badge-pass">₱42 — Confirmed</span></td>
+                  <td><code>TRK-5530</code></td>
+                  <td><span class="status-chip dispensed">Dispensed</span></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Order Tracker -->
+        <div class="dash-card" id="tracking">
+          <div class="dash-card-header">
+            <h2 class="dash-card-title">Track Order — REQ-2026-003</h2>
+            <span class="dash-badge green">Active Tracking Code: TRK-9982</span>
+          </div>
+          <div class="order-tracker">
+            <div class="tracker-step done">
+              <div class="tracker-dot done-dot"></div>
+              <div class="tracker-info">
+                <strong>Request Submitted</strong>
+                <span>Jun 5, 2026 · 10:30 AM</span>
+              </div>
+            </div>
+            <div class="tracker-step done">
+              <div class="tracker-dot done-dot"></div>
+              <div class="tracker-info">
+                <strong>Prescription Verified</strong>
+                <span>Jun 5, 2026 · 02:15 PM — Approved by Medical Staff</span>
+              </div>
+            </div>
+            <div class="tracker-step done">
+              <div class="tracker-dot done-dot"></div>
+              <div class="tracker-info">
+                <strong>Payment Confirmed</strong>
+                <span>Jun 5, 2026 · 03:00 PM — ₱50 operational fee</span>
+              </div>
+            </div>
+            <div class="tracker-step done">
+              <div class="tracker-dot done-dot"></div>
+              <div class="tracker-info">
+                <strong>Milk Batch Allocated (FIFO)</strong>
+                <span>Jun 6, 2026 · 09:00 AM — Batch MHB-2026-0425 selected</span>
+              </div>
+            </div>
+            <div class="tracker-step active-step">
+              <div class="tracker-dot active-dot"></div>
+              <div class="tracker-info">
+                <strong>Ready for Pickup ✓</strong>
+                <span>Jun 7, 2026 · 08:00 AM — Cold-chain packaging prepared</span>
+                <div class="tracker-alert">⚠ Reminder: Thawed milk must be consumed within 24 hours.</div>
+              </div>
+            </div>
+            <div class="tracker-step pending-step">
+              <div class="tracker-dot pending-dot"></div>
+              <div class="tracker-info">
+                <strong>Dispensed</strong>
+                <span>Awaiting pickup at MHMB clinic</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Recipient Profile -->
+        <div class="dash-card" id="myprofile">
+          <div class="dash-card-header">
+            <h2 class="dash-card-title">Recipient / Infant Profile</h2>
+          </div>
+          <div class="donor-profile-grid">
+            <div class="donor-profile-field"><span class="dpf-label">Guardian Name</span><span class="dpf-val">Rosa Dela Cruz</span></div>
+            <div class="donor-profile-field"><span class="dpf-label">Infant Name</span><span class="dpf-val">Baby Dela Cruz</span></div>
+            <div class="donor-profile-field"><span class="dpf-label">Hospital</span><span class="dpf-val">Ospital ng Makati</span></div>
+            <div class="donor-profile-field"><span class="dpf-label">Doctor</span><span class="dpf-val">Dr. Ana Reyes, Pediatrics</span></div>
+            <div class="donor-profile-field"><span class="dpf-label">Diagnosis</span><span class="dpf-val">Premature Birth (32 weeks)</span></div>
+            <div class="donor-profile-field"><span class="dpf-label">Birth Weight</span><span class="dpf-val">1,420 grams</span></div>
+            <div class="donor-profile-field"><span class="dpf-label">Priority Status</span><span class="dpf-val"><span class="status-chip ready">NICU — High Priority</span></span></div>
+            <div class="donor-profile-field"><span class="dpf-label">Registered</span><span class="dpf-val">February 18, 2026</span></div>
+          </div>
+        </div>
+
+      </section>
+    </main>
+  </div>
+
+  <script>
+    const user = JSON.parse(sessionStorage.getItem('hmbms_user') || '{}');
+    if (!user.username || user.username !== 'recipient') {
+      window.location.href = 'login.html';
+    }
+    document.getElementById('recipient-logout-btn').addEventListener('click', () => {
+      sessionStorage.removeItem('hmbms_user');
+      window.location.href = 'login.html';
+    });
+    document.getElementById('new-request-btn').addEventListener('click', () => {
+      alert('📋 New Milk Request\n\nThis form will require:\n• Requested volume (ml)\n• Doctor\'s prescription (digital upload)\n• Completed recipient forms\n\nA unique tracking code will be generated automatically.\n\nNote: Full request form will be in Stage 7 (Recipient Services Module).');
+    });
+    document.querySelectorAll('.dash-sidenav-item').forEach(item => {
+      item.addEventListener('click', function() {
+        document.querySelectorAll('.dash-sidenav-item').forEach(i => i.classList.remove('active'));
+        this.classList.add('active');
+      });
+    });
+  </script>
+</body>
+</html>

@@ -106,6 +106,12 @@
           </p>
         </div>
 
+        <!-- Inline error message -->
+        <div id="login-error-msg" class="login-error-msg" role="alert" style="display:none;">
+          <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor" aria-hidden="true"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"/></svg>
+          <span>Incorrect username or password. Check the credentials below and try again.</span>
+        </div>
+
         <!-- LOGIN FORM -->
         <form id="login-form" action="#" method="post" novalidate aria-label="HMBMS login form">
 
@@ -205,6 +211,21 @@
           Are you a new donor?
           <a href="#" id="register-donor-link" aria-label="Register as a new donor">Register here</a>
         </p>
+
+        <!-- Test Credentials Hint -->
+        <details class="login-test-hint" id="login-test-hint">
+          <summary>🔑 View test accounts</summary>
+          <table>
+            <thead><tr><th>Role</th><th>Username</th><th>Password</th></tr></thead>
+            <tbody>
+              <tr><td><span class="role-badge admin">Admin</span></td><td><code>admin</code></td><td><code>Admin@2026</code></td></tr>
+              <tr><td><span class="role-badge medtech">MedTech</span></td><td><code>medtech</code></td><td><code>MedTech@2026</code></td></tr>
+              <tr><td><span class="role-badge nurse">Nurse</span></td><td><code>nurse</code></td><td><code>Nurse@2026</code></td></tr>
+              <tr><td><span class="role-badge donor">Donor</span></td><td><code>donor</code></td><td><code>Donor@2026</code></td></tr>
+              <tr><td><span class="role-badge recipient">Recipient</span></td><td><code>recipient</code></td><td><code>Recipient@2026</code></td></tr>
+            </tbody>
+          </table>
+        </details>
       </div>
     </div>
   </main>
@@ -235,13 +256,21 @@
       toggleBtn.setAttribute('aria-label', isHidden ? 'Hide password' : 'Show password');
     });
 
-    // ── Basic client-side validation feedback (form is non-functional — placeholder)
+    // ── Basic client-side validation feedback
     const loginForm = document.getElementById('login-form');
+    const errorMsg  = document.getElementById('login-error-msg');
+
     loginForm.addEventListener('submit', (e) => {
       e.preventDefault();
 
       const username = document.getElementById('username-input').value.trim();
       const password = document.getElementById('password-input').value;
+
+      // Clear previous error
+      errorMsg.style.display = 'none';
+      ['username-input', 'password-input'].forEach(id => {
+        document.getElementById(id).style.borderColor = '';
+      });
 
       if (!username) {
         document.getElementById('username-input').focus();
@@ -254,25 +283,45 @@
         return;
       }
 
-      // Placeholder — backend routing in Stage 2
+      // ── Mock test accounts (Stage 1 — no backend yet)
+      const testAccounts = {
+        'admin':     { password: 'Admin@2026',     role: 'Administrator',          page: 'dashboard-admin.html' },
+        'medtech':   { password: 'MedTech@2026',   role: 'Medical Technologist',   page: 'dashboard-medtech.html' },
+        'nurse':     { password: 'Nurse@2026',     role: 'Nurse / Midwife',        page: 'dashboard-nurse.html' },
+        'donor':     { password: 'Donor@2026',     role: 'Donor',                  page: 'dashboard-donor.html' },
+        'recipient': { password: 'Recipient@2026', role: 'Recipient / Beneficiary', page: 'dashboard-recipient.html' }
+      };
+
+      const usernameLower = username.toLowerCase();
+      const account = testAccounts[usernameLower];
+
       const btn = document.getElementById('login-submit-btn');
-      btn.textContent = 'Signing in…';
+      btn.innerHTML = '<span class="btn-spinner"></span> Signing in…';
       btn.disabled = true;
+
       setTimeout(() => {
-        btn.innerHTML = `
-          <svg viewBox="0 0 24 24" width="18" height="18" fill="#fff" aria-hidden="true">
-            <path d="M11 7L9.6 8.4l2.6 2.6H2v2h10.2l-2.6 2.6L11 17l5-5-5-5zm9 12h-8v2h8c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2h-8v2h8v14z"/>
-          </svg>
-          Login`;
+        btn.innerHTML = `<svg viewBox="0 0 24 24" width="18" height="18" fill="#fff" aria-hidden="true"><path d="M11 7L9.6 8.4l2.6 2.6H2v2h10.2l-2.6 2.6L11 17l5-5-5-5zm9 12h-8v2h8c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2h-8v2h8v14z"/></svg> Login`;
         btn.disabled = false;
-        alert('⚠️ Backend not yet connected. This is Stage 1 — login routing will be implemented in Stage 2.');
-      }, 800);
+
+        if (account && account.password === password) {
+          // Store session info and redirect to dashboard
+          sessionStorage.setItem('hmbms_user', JSON.stringify({ username: usernameLower, role: account.role }));
+          window.location.href = account.page;
+        } else {
+          // Show inline error
+          errorMsg.style.display = 'flex';
+          document.getElementById('username-input').style.borderColor = 'var(--clr-error)';
+          document.getElementById('password-input').style.borderColor = 'var(--clr-error)';
+          document.getElementById('username-input').focus();
+        }
+      }, 700);
     });
 
     // Reset error border on input
     ['username-input', 'password-input'].forEach(id => {
       document.getElementById(id).addEventListener('input', (e) => {
         e.target.style.borderColor = '';
+        errorMsg.style.display = 'none';
       });
     });
   </script>

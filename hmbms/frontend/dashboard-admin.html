@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="robots" content="noindex, nofollow" />
+  <title>Administrator Dashboard — HMBMS</title>
+  <link rel="stylesheet" href="assets/css/style.css" />
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🍼</text></svg>" />
+</head>
+<body class="dashboard-page">
+
+  <!-- ─── DASHBOARD NAVBAR ─────────────────────────────────────── -->
+  <nav class="dash-navbar" role="navigation" aria-label="Dashboard navigation">
+    <div class="dash-nav-inner">
+      <a href="index.html" class="nav-brand" aria-label="HMBMS Homepage">
+        <div class="nav-logo-icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 14H9V8h2v8zm4 0h-2V8h2v8z"/></svg>
+        </div>
+        <div class="nav-brand-text">
+          <span class="nav-system-name">HMBMS</span>
+          <span class="nav-org-name">Makati Human Milk Bank</span>
+        </div>
+      </a>
+      <div class="dash-nav-right">
+        <span class="dash-role-badge admin">Administrator</span>
+        <span class="dash-user-name">👤 Admin User</span>
+        <a href="login.html" class="dash-logout-btn" id="admin-logout-btn">Logout</a>
+      </div>
+    </div>
+  </nav>
+
+  <!-- ─── DASHBOARD LAYOUT ──────────────────────────────────────── -->
+  <div class="dash-layout">
+
+    <!-- SIDEBAR -->
+    <aside class="dash-sidebar" aria-label="Sidebar navigation">
+      <nav class="dash-sidenav">
+        <a href="#overview" class="dash-sidenav-item active" id="sn-overview">
+          <svg viewBox="0 0 24 24"><path d="M3 13h8V3H3v10zm0 8h8v-6H3v6zm10 0h8V11h-8v10zm0-18v6h8V3h-8z"/></svg>
+          Overview
+        </a>
+        <a href="#inventory" class="dash-sidenav-item" id="sn-inventory">
+          <svg viewBox="0 0 24 24"><path d="M20 6h-2.18c.07-.44.18-.88.18-1.36C18 2.5 15.5 0 12.36 0c-1.73 0-3.24.87-4.19 2.19L7 3 5.82 2.19C4.87.87 3.36 0 1.64 0H1v2h.64C2.56 2 3.4 2.5 3.96 3.19l1.5 1.96-.87.87C4.19 6.68 4 7.32 4 8H2c-1.1 0-2 .9-2 2v8c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2z"/></svg>
+          Milk Inventory
+        </a>
+        <a href="#recalls" class="dash-sidenav-item" id="sn-recalls">
+          <svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"/></svg>
+          Batch Recalls
+        </a>
+        <a href="#donors" class="dash-sidenav-item" id="sn-donors">
+          <svg viewBox="0 0 24 24"><path d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z"/></svg>
+          Donor Registry
+        </a>
+        <a href="#reports" class="dash-sidenav-item" id="sn-reports">
+          <svg viewBox="0 0 24 24"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-5 14H7v-2h7v2zm3-4H7v-2h10v2zm0-4H7V7h10v2z"/></svg>
+          Reports
+        </a>
+        <a href="#audit" class="dash-sidenav-item" id="sn-audit">
+          <svg viewBox="0 0 24 24"><path d="M14 2H6c-1.1 0-1.99.9-1.99 2L4 20c0 1.1.89 2 1.99 2H18c1.1 0 2-.9 2-2V8l-6-6zm2 16H8v-2h8v2zm0-4H8v-2h8v2zm-3-5V3.5L18.5 9H13z"/></svg>
+          Audit Log
+        </a>
+      </nav>
+    </aside>
+
+    <!-- MAIN CONTENT -->
+    <main class="dash-main" id="main-content">
+
+      <!-- Overview Section -->
+      <section id="overview" class="dash-section">
+        <div class="dash-section-header">
+          <div>
+            <h1 class="dash-section-title">System Overview</h1>
+            <p class="dash-section-sub">Saturday, June 7, 2026 — Real-time snapshot (mock data)</p>
+          </div>
+          <button class="dash-btn dash-btn-primary" id="generate-report-btn">
+            <svg viewBox="0 0 24 24" width="16" height="16" fill="#fff"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-5 14H7v-2h7v2zm3-4H7v-2h10v2zm0-4H7V7h10v2z"/></svg>
+            Generate Report
+          </button>
+        </div>
+
+        <!-- KPI Cards -->
+        <div class="dash-kpi-grid">
+          <div class="dash-kpi-card blue">
+            <div class="dash-kpi-icon"><svg viewBox="0 0 24 24"><path d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z"/></svg></div>
+            <div class="dash-kpi-value">47</div>
+            <div class="dash-kpi-label">Active Donors</div>
+            <div class="dash-kpi-trend up">↑ +3 this month</div>
+          </div>
+          <div class="dash-kpi-card green">
+            <div class="dash-kpi-icon"><svg viewBox="0 0 24 24"><path d="M20 6h-2.18c.07-.44.18-.88.18-1.36C18 2.5 15.5 0 12.36 0c-1.73 0-3.24.87-4.19 2.19L7 3 5.82 2.19C4.87.87 3.36 0 1.64 0H1v2h.64C2.56 2 3.4 2.5 3.96 3.19l1.5 1.96-.87.87C4.19 6.68 4 7.32 4 8H2c-1.1 0-2 .9-2 2v8c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2z"/></svg></div>
+            <div class="dash-kpi-value">12.4 L</div>
+            <div class="dash-kpi-label">Ready Milk Stock</div>
+            <div class="dash-kpi-trend up">↑ 8 batches ready</div>
+          </div>
+          <div class="dash-kpi-card amber">
+            <div class="dash-kpi-icon"><svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"/></svg></div>
+            <div class="dash-kpi-value">2</div>
+            <div class="dash-kpi-label">Active Recalls</div>
+            <div class="dash-kpi-trend down">⚠ Requires attention</div>
+          </div>
+          <div class="dash-kpi-card teal">
+            <div class="dash-kpi-icon"><svg viewBox="0 0 24 24"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-5 14H7v-2h7v2zm3-4H7v-2h10v2zm0-4H7V7h10v2z"/></svg></div>
+            <div class="dash-kpi-value">98.2%</div>
+            <div class="dash-kpi-label">Batch Pass Rate</div>
+            <div class="dash-kpi-trend up">↑ +1.4% vs last month</div>
+          </div>
+        </div>
+
+        <!-- Recent Batches Table -->
+        <div class="dash-card" id="inventory">
+          <div class="dash-card-header">
+            <h2 class="dash-card-title">Recent Milk Batches</h2>
+            <span class="dash-badge">Inventory Snapshot</span>
+          </div>
+          <div class="dash-table-wrap">
+            <table class="dash-table" aria-label="Recent milk batches">
+              <thead>
+                <tr><th>Batch ID</th><th>Donor ID</th><th>Volume</th><th>Pasteurized</th><th>Lab Result</th><th>Status</th><th>Expiry</th></tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td><code>MHB-2026-0511</code></td><td>D-0042</td><td>180 ml</td><td>May 11, 2026</td>
+                  <td><span class="badge-pass">PASS</span></td>
+                  <td><span class="status-chip ready">Ready</span></td><td>May 11, 2027</td>
+                </tr>
+                <tr>
+                  <td><code>MHB-2026-0508</code></td><td>D-0039</td><td>210 ml</td><td>May 8, 2026</td>
+                  <td><span class="badge-pass">PASS</span></td>
+                  <td><span class="status-chip dispensed">Dispensed</span></td><td>May 8, 2027</td>
+                </tr>
+                <tr>
+                  <td><code>MHB-2026-0504</code></td><td>D-0031</td><td>150 ml</td><td>May 4, 2026</td>
+                  <td><span class="badge-fail">FAIL</span></td>
+                  <td><span class="status-chip locked">Locked</span></td><td>—</td>
+                </tr>
+                <tr>
+                  <td><code>MHB-2026-0429</code></td><td>D-0028</td><td>200 ml</td><td>Apr 29, 2026</td>
+                  <td><span class="badge-pass">PASS</span></td>
+                  <td><span class="status-chip quarantined">Quarantined</span></td><td>Apr 29, 2027</td>
+                </tr>
+                <tr>
+                  <td><code>MHB-2026-0425</code></td><td>D-0019</td><td>175 ml</td><td>Apr 25, 2026</td>
+                  <td><span class="badge-pass">PASS</span></td>
+                  <td><span class="status-chip ready">Ready</span></td><td>Apr 25, 2027</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Batch Recall Panel -->
+        <div class="dash-card danger-card" id="recalls">
+          <div class="dash-card-header">
+            <h2 class="dash-card-title">⚠ Active Batch Recalls</h2>
+            <button class="dash-btn dash-btn-danger" id="initiate-recall-btn">+ Initiate Recall</button>
+          </div>
+          <div class="dash-table-wrap">
+            <table class="dash-table" aria-label="Active batch recalls">
+              <thead>
+                <tr><th>Recall ID</th><th>Donor ID</th><th>Batches Affected</th><th>Reason</th><th>Initiated By</th><th>Date</th><th>Status</th></tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td><code>RCL-2026-002</code></td><td>D-0028</td><td>MHB-2026-0429, MHB-2026-0418</td>
+                  <td>HIV positive result post-donation</td><td>Admin User</td><td>Jun 1, 2026</td>
+                  <td><span class="status-chip quarantined">Active</span></td>
+                </tr>
+                <tr>
+                  <td><code>RCL-2026-001</code></td><td>D-0015</td><td>MHB-2026-0312</td>
+                  <td>Hepatitis B retest positive</td><td>Admin User</td><td>Mar 15, 2026</td>
+                  <td><span class="status-chip locked">Under Review</span></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Audit Log -->
+        <div class="dash-card" id="audit">
+          <div class="dash-card-header">
+            <h2 class="dash-card-title">Audit Log <span style="font-size:0.75rem;color:var(--clr-text-muted);font-weight:400;">(Immutable)</span></h2>
+            <span class="dash-badge green">Live</span>
+          </div>
+          <div class="audit-log-list">
+            <div class="audit-entry">
+              <span class="audit-time">Jun 7, 2026 · 14:02</span>
+              <span class="audit-user admin-tag">admin</span>
+              <span class="audit-action">Initiated batch recall RCL-2026-002 for Donor D-0028 — HIV positive</span>
+            </div>
+            <div class="audit-entry">
+              <span class="audit-time">Jun 7, 2026 · 13:45</span>
+              <span class="audit-user medtech-tag">medtech</span>
+              <span class="audit-action">Batch MHB-2026-0511 marked PASS — lab results uploaded</span>
+            </div>
+            <div class="audit-entry">
+              <span class="audit-time">Jun 7, 2026 · 11:30</span>
+              <span class="audit-user nurse-tag">nurse</span>
+              <span class="audit-action">Donor D-0047 screening completed — enrolled</span>
+            </div>
+            <div class="audit-entry">
+              <span class="audit-time">Jun 7, 2026 · 10:15</span>
+              <span class="audit-user admin-tag">admin</span>
+              <span class="audit-action">Report: May 2026 monthly summary generated and exported</span>
+            </div>
+            <div class="audit-entry">
+              <span class="audit-time">Jun 6, 2026 · 16:55</span>
+              <span class="audit-user nurse-tag">nurse</span>
+              <span class="audit-action">180ml donation recorded for Donor D-0042 — QR labeled</span>
+            </div>
+            <div class="audit-entry">
+              <span class="audit-time">Jun 6, 2026 · 09:10</span>
+              <span class="audit-user medtech-tag">medtech</span>
+              <span class="audit-action">Pasteurization batch MHB-2026-0511 logged — 62.5°C / 30 min</span>
+            </div>
+          </div>
+        </div>
+      </section>
+
+    </main>
+  </div>
+
+  <script>
+    // Session guard
+    const user = JSON.parse(sessionStorage.getItem('hmbms_user') || '{}');
+    if (!user.username || user.username !== 'admin') {
+      window.location.href = 'login.html';
+    }
+    document.querySelector('.dash-user-name').textContent = '👤 ' + (user.username || 'Admin');
+
+    // Sidebar active state
+    document.querySelectorAll('.dash-sidenav-item').forEach(item => {
+      item.addEventListener('click', function() {
+        document.querySelectorAll('.dash-sidenav-item').forEach(i => i.classList.remove('active'));
+        this.classList.add('active');
+      });
+    });
+
+    // Logout
+    document.getElementById('admin-logout-btn').addEventListener('click', () => {
+      sessionStorage.removeItem('hmbms_user');
+      window.location.href = 'login.html';
+    });
+
+    // Mock button handlers
+    document.getElementById('generate-report-btn').addEventListener('click', () => {
+      alert('📊 Report Generation\n\nGenerating May 2026 monthly report...\n\nNote: PDF export will be fully implemented in Stage 9 (Reporting & Analytics).');
+    });
+    document.getElementById('initiate-recall-btn').addEventListener('click', () => {
+      alert('⚠ Batch Recall\n\nEnter Donor ID to initiate a recall.\n\nNote: Full recall workflow will be implemented in Stage 8 (Batch Recall & Admin Module).');
+    });
+  </script>
+</body>
+</html>
