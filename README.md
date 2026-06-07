@@ -8,18 +8,19 @@ Access the live deployment here:
 
 ---
 
-## 🧪 Test Accounts for Verification
-For testing and evaluating the system's role-based access control (RBAC), please use the following mock credentials. These correspond to the 5 primary user roles in the system:
+## 🧪 Test Accounts for the Live Server
+Use these credentials at **https://hmbms-server.onrender.com/login.html**. They match the accounts auto-seeded by the PostgreSQL database on first boot:
 
-| User Role | Username | Password | Dashboard Page |
+| User Role | Username | Password | After Login |
 | :--- | :--- | :--- | :--- |
-| **Administrator** | `admin` | `Admin@2026` | `dashboard-admin.html` — Batch recalls, audit log, inventory, reports |
-| **Medical Technologist** | `medtech` | `MedTech@2026` | `dashboard-medtech.html` — Pasteurization log, lab results, batch status |
-| **Nurse / Midwife** | `nurse` | `Nurse@2026` | `dashboard-nurse.html` — Donor screening queue, collection log, schedule |
-| **Donor** | `donor` | `Donor@2026` | `dashboard-donor.html` — My profile, donation history, appointments |
-| **Recipient / Beneficiary** | `recipient` | `Recipient@2026` | `dashboard-recipient.html` — My orders, order tracker, request form |
+| **Administrator** | `admin` | `admin123` | Full system: recalls, audit log, inventory, reports |
+| **Medical Technologist** | `medtech1` | `medtech123` | Pasteurization log, lab results, batch status |
+| **Nurse / Midwife** | `nurse1` | `nurse123` | Donor screening queue, collection log, schedule |
+| **Donor** | `donor1` | `donor123` | My profile, donation history, appointments |
+| **Recipient / Beneficiary** | `recipient1` | `recipient123` | My orders, order tracker, request form |
 
-> **Note:** These are Stage 1 mock credentials — no backend or database is connected yet. Authentication and real data will be wired in Stage 2 (Backend + RBAC).
+> **Live URL:** https://hmbms-server.onrender.com/login.html  
+> **⚠ Note:** The Render free tier may take 30–60 seconds to wake up from idle. The `DATABASE_URL` environment variable must be configured in the Render dashboard for the PostgreSQL database to connect (see setup guide below).
 
 ---
 

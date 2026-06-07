@@ -218,11 +218,11 @@
           <table>
             <thead><tr><th>Role</th><th>Username</th><th>Password</th></tr></thead>
             <tbody>
-              <tr><td><span class="role-badge admin">Admin</span></td><td><code>admin</code></td><td><code>Admin@2026</code></td></tr>
-              <tr><td><span class="role-badge medtech">MedTech</span></td><td><code>medtech</code></td><td><code>MedTech@2026</code></td></tr>
-              <tr><td><span class="role-badge nurse">Nurse</span></td><td><code>nurse</code></td><td><code>Nurse@2026</code></td></tr>
-              <tr><td><span class="role-badge donor">Donor</span></td><td><code>donor</code></td><td><code>Donor@2026</code></td></tr>
-              <tr><td><span class="role-badge recipient">Recipient</span></td><td><code>recipient</code></td><td><code>Recipient@2026</code></td></tr>
+              <tr><td><span class="role-badge admin">Admin</span></td><td><code>admin</code></td><td><code>admin123</code></td></tr>
+              <tr><td><span class="role-badge medtech">MedTech</span></td><td><code>medtech1</code></td><td><code>medtech123</code></td></tr>
+              <tr><td><span class="role-badge nurse">Nurse</span></td><td><code>nurse1</code></td><td><code>nurse123</code></td></tr>
+              <tr><td><span class="role-badge donor">Donor</span></td><td><code>donor1</code></td><td><code>donor123</code></td></tr>
+              <tr><td><span class="role-badge recipient">Recipient</span></td><td><code>recipient1</code></td><td><code>recipient123</code></td></tr>
             </tbody>
           </table>
         </details>
@@ -257,6 +257,7 @@
     });
 
     // ── Basic client-side validation feedback + BACKEND LOGIN
+    const errorMsg  = document.getElementById('login-error-msg');
     const loginForm = document.getElementById('login-form');
     loginForm.addEventListener('submit', async (e) => {
       e.preventDefault();
@@ -300,22 +301,19 @@
             window.location.href = data.redirect || '/dashboard';
           }, 500);
         } else {
-          btn.innerHTML = `
-            <svg viewBox="0 0 24 24" width="18" height="18" fill="#fff" aria-hidden="true">
-              <path d="M11 7L9.6 8.4l2.6 2.6H2v2h10.2l-2.6 2.6L11 17l5-5-5-5zm9 12h-8v2h8c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2h-8v2h8v14z"/>
-            </svg>
-            Login`;
+          btn.innerHTML = `<svg viewBox="0 0 24 24" width="18" height="18" fill="#fff" aria-hidden="true"><path d="M11 7L9.6 8.4l2.6 2.6H2v2h10.2l-2.6 2.6L11 17l5-5-5-5zm9 12h-8v2h8c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2h-8v2h8v14z"/></svg> Login`;
           btn.disabled = false;
-          alert(data.error || 'Login failed. Please check your credentials.');
+          // Show inline error with server message
+          errorMsg.querySelector('span').textContent = data.error || 'Invalid username or password.';
+          errorMsg.style.display = 'flex';
+          document.getElementById('username-input').style.borderColor = 'var(--clr-error)';
+          document.getElementById('password-input').style.borderColor = 'var(--clr-error)';
         }
       } catch (err) {
-        btn.innerHTML = `
-          <svg viewBox="0 0 24 24" width="18" height="18" fill="#fff" aria-hidden="true">
-            <path d="M11 7L9.6 8.4l2.6 2.6H2v2h10.2l-2.6 2.6L11 17l5-5-5-5zm9 12h-8v2h8c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2h-8v2h8v14z"/>
-          </svg>
-          Login`;
+        btn.innerHTML = `<svg viewBox="0 0 24 24" width="18" height="18" fill="#fff" aria-hidden="true"><path d="M11 7L9.6 8.4l2.6 2.6H2v2h10.2l-2.6 2.6L11 17l5-5-5-5zm9 12h-8v2h8c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2h-8v2h8v14z"/></svg> Login`;
         btn.disabled = false;
-        alert('Connection error. Make sure the server is running on port 3000.');
+        errorMsg.querySelector('span').textContent = '⚠ Cannot reach the server. Please try again shortly.';
+        errorMsg.style.display = 'flex';
       }
     });
 
