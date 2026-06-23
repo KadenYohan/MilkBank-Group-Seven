@@ -61,10 +61,19 @@
       </div>
 
       <div class="login-panel-right" style="overflow-y:auto;">
-        <h1 class="login-form-title">Create Donor Account</h1>
-        <p class="login-form-subtitle">Fill in your details to register as a new donor.</p>
+        <h1 class="login-form-title" id="form-title">Create Account</h1>
+        <p class="login-form-subtitle" id="form-subtitle">Select your role and fill in your details to register.</p>
 
         <form id="register-form" novalidate>
+          <div class="form-group">
+            <label class="form-label" for="reg-role">Role <span class="required-star">*</span></label>
+            <div class="input-wrap">
+              <select class="form-input" id="reg-role" required onchange="toggleRoleFields()">
+                <option value="donor">Donor (I want to donate milk)</option>
+                <option value="recipient">Recipient (I need milk for my infant)</option>
+              </select>
+            </div>
+          </div>
           <div class="form-group">
             <label class="form-label" for="reg-username">Username <span class="required-star">*</span></label>
             <div class="input-wrap">
@@ -110,7 +119,7 @@
             </div>
           </div>
 
-          <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;" id="donor-fields">
             <div class="form-group">
               <label class="form-label" for="reg-bdate">Birth Date</label>
               <div class="input-wrap">
@@ -131,6 +140,13 @@
             </div>
           </div>
 
+          <div class="form-group" id="recipient-fields" style="display: none;">
+            <label class="form-label" for="reg-infant">Infant's Name <span class="required-star">*</span></label>
+            <div class="input-wrap">
+              <input class="form-input" type="text" id="reg-infant" placeholder="Name of your baby" />
+            </div>
+          </div>
+
           <div class="form-group">
             <label class="form-label" for="reg-address">Home Address</label>
             <div class="input-wrap">
@@ -140,7 +156,7 @@
 
           <button type="submit" class="btn-login" id="register-btn">
             <svg viewBox="0 0 24 24"><path d="M15 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm-9-2V7H4v3H1v2h3v3h2v-3h3v-2H6zm9 4c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>
-            Register as Donor
+            <span id="btn-text">Register as Donor</span>
           </button>
         </form>
 
@@ -156,10 +172,28 @@
   </footer>
 
   <script>
+    function toggleRoleFields() {
+      const role = document.getElementById('reg-role').value;
+      const donorFields = document.getElementById('donor-fields');
+      const recipientFields = document.getElementById('recipient-fields');
+      const btnText = document.getElementById('btn-text');
+
+      if (role === 'recipient') {
+        donorFields.style.display = 'none';
+        recipientFields.style.display = 'block';
+        btnText.textContent = 'Register as Recipient';
+      } else {
+        donorFields.style.display = 'grid';
+        recipientFields.style.display = 'none';
+        btnText.textContent = 'Register as Donor';
+      }
+    }
+
     document.getElementById('register-form').addEventListener('submit', async (e) => {
       e.preventDefault();
       const btn = document.getElementById('register-btn');
-      btn.textContent = 'Registering...';
+      const originalText = document.getElementById('btn-text').textContent;
+      document.getElementById('btn-text').textContent = 'Registering...';
       btn.disabled = true;
 
       try {
@@ -167,6 +201,7 @@
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
+            role: document.getElementById('reg-role').value,
             username: document.getElementById('reg-username').value.trim(),
             password: document.getElementById('reg-password').value,
             first_name: document.getElementById('reg-fname').value.trim(),
@@ -175,22 +210,23 @@
             phone: document.getElementById('reg-phone').value.trim(),
             birth_date: document.getElementById('reg-bdate').value,
             blood_type: document.getElementById('reg-blood').value,
-            home_address: document.getElementById('reg-address').value.trim()
+            home_address: document.getElementById('reg-address').value.trim(),
+            infant_name: document.getElementById('reg-infant').value.trim()
           })
         });
         const data = await res.json();
 
         if (data.success) {
-          alert('✅ ' + data.message + '\nYour Donor ID: ' + data.donor_id);
+          alert('✅ ' + data.message + '\nYour ID: ' + data.user_id);
           window.location.href = '/login.html';
         } else {
           alert('❌ ' + (data.error || 'Registration failed.'));
-          btn.textContent = 'Register as Donor';
+          document.getElementById('btn-text').textContent = originalText;
           btn.disabled = false;
         }
       } catch (err) {
         alert('Connection error. Make sure the server is running.');
-        btn.textContent = 'Register as Donor';
+        document.getElementById('btn-text').textContent = originalText;
         btn.disabled = false;
       }
     });

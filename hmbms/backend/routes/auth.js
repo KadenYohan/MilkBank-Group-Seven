@@ -79,13 +79,15 @@ router.get('/session', (req, res) => {
   }
 });
 
-// POST /api/auth/register (Donor self-registration)
+// POST /api/auth/register (Donor or Recipient self-registration)
 router.post('/register', async (req, res) => {
-  const { username, password, first_name, last_name, email, phone, birth_date, blood_type, home_address } = req.body;
+  const { role, username, password, first_name, last_name, email, phone, birth_date, blood_type, home_address, infant_name } = req.body;
 
   if (!username || !password || !first_name || !last_name) {
     return res.status(400).json({ error: 'Required fields: username, password, first_name, last_name' });
   }
+
+  const userRole = role === 'recipient' ? 'recipient' : 'donor'; // Default to donor if invalid
 
   try {
     // Check if username exists
@@ -98,20 +100,33 @@ router.post('/register', async (req, res) => {
     const { v4: uuidv4 } = require('uuid');
     const user_id = uuidv4();
     const password_hash = bcrypt.hashSync(password, 10);
-    const donor_id = 'DNR-' + Date.now().toString(36).toUpperCase();
-
+    
     const client = await db.pool.connect();
     try {
       await client.query('BEGIN');
       await client.query(`
         INSERT INTO users (user_id, username, password_hash, role, first_name, last_name, email, phone)
-        VALUES ($1, $2, $3, 'donor', $4, $5, $6, $7)
-      `, [user_id, username, password_hash, first_name, last_name, email || '', phone || '']);
-
-      await client.query(`
-        INSERT INTO donors (donor_id, user_id, first_name, last_name, birth_date, contact_number, home_address, blood_type)
         VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
-      `, [donor_id, user_id, first_name, last_name, birth_date || null, phone || '', home_address || '', blood_type || '']);
+      `, [user_id, username, password_hash, userRole, first_name, last_name, email || '', phone || '']);
+
+      if (userRole === 'donor') {
+        const donor_id = 'DNR-' + Date.now().toString(36).toUpperCase();
+        await client.query(`
+          INSERT INTO donors (donor_id, user_id, first_name, last_name, birth_date, contact_number, home_address, blood_type)
+          VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+        `, [donor_id, user_id, first_name, last_name, birth_date || null, phone || '', home_address || '', blood_type || '']);
+        await logAudit(user_id, username, 'DONOR_REGISTERED', `Donor ID: ${donor_id}`, req.ip);
+        res.json({ success: true, user_id: donor_id, message: 'Donor registration successful! You can now log in.' });
+      } else {
+        const recipient_id = 'RCP-' + Date.now().toString(36).toUpperCase();
+        await client.query(`
+          INSERT INTO recipients (recipient_id, user_id, infant_name, guardian_name)
+          VALUES ($1, $2, $3, $4)
+        `, [recipient_id, user_id, infant_name || 'To Be Updated', `${first_name} ${last_name}`]);
+        await logAudit(user_id, username, 'RECIPIENT_REGISTERED', `Recipient ID: ${recipient_id}`, req.ip);
+        res.json({ success: true, user_id: recipient_id, message: 'Recipient registration successful! You can now log in.' });
+      }
+
       await client.query('COMMIT');
     } catch (err) {
       await client.query('ROLLBACK');
@@ -119,10 +134,6 @@ router.post('/register', async (req, res) => {
     } finally {
       client.release();
     }
-
-    await logAudit(user_id, username, 'DONOR_REGISTERED', `Donor ID: ${donor_id}`, req.ip);
-
-    res.json({ success: true, donor_id, message: 'Registration successful! You can now log in.' });
   } catch (err) {
     console.error('Error during registration:', err);
     res.status(500).json({ error: 'Internal server error' });
