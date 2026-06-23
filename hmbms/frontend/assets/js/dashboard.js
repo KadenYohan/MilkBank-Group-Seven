@@ -1288,6 +1288,11 @@ window.submitPayment = async function(reqId) {
 
 window.markReady = async function(reqId) {
   const result = await API.put(`/api/requests/${reqId}/ready`);
+  
+  if (result.success && result.sms_data && result.sms_data.simulated) {
+    alert(`📱 [MOCK SMS GATEWAY]\n\nTo: ${result.sms_data.to}\nMessage: ${result.sms_data.text}\n\n(This proves the SMS logic triggered correctly!)`);
+  }
+  
   toast(result.message, result.success ? 'success' : 'error');
   loadPage('requests');
 };

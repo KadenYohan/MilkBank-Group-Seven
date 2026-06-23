@@ -229,9 +229,12 @@ router.put('/:id/ready', requireAuth, requireRole('admin', 'nurse'), async (req,
           const userRes = await client.query('SELECT phone FROM users WHERE user_id = $1', [recipient.user_id]);
           const user = userRes.rows[0];
           if (user && user.phone) {
-            // Fired asynchronously so response is immediate (<60s requirement)
-            sendMilkReadySMS(user.phone, request.tracking_code, recipient.infant_name)
-              .catch(err => console.error('Failed to trigger SMS:', err));
+            try {
+              let smsResult = await sendMilkReadySMS(user.phone, request.tracking_code, recipient.infant_name);
+              res.locals.smsResult = smsResult;
+            } catch (err) {
+              console.error('Failed to trigger SMS:', err);
+            }
           }
         }
       }
@@ -244,7 +247,7 @@ router.put('/:id/ready', requireAuth, requireRole('admin', 'nurse'), async (req,
     }
 
     await logAudit(req.session.user.user_id, req.session.user.username, 'REQUEST_READY', `Request ${req.params.id}`, req.ip);
-    res.json({ success: true, message: 'Request marked as ready.' });
+    res.json({ success: true, message: 'Request marked as ready.', sms_data: res.locals.smsResult });
   } catch (err) {
     console.error('Error marking request as ready:', err);
     res.status(500).json({ error: 'Internal server error' });

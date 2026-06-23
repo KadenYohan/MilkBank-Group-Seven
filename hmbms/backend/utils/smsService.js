@@ -24,7 +24,7 @@ async function sendMilkReadySMS(phoneNumber, trackingCode, infantName) {
       console.log(`Message: ${smsMessage}`);
       console.log(`Status: Sent (Simulated)`);
       console.log(`========================================\n`);
-      return resolve({ success: true, simulated: true });
+      return resolve({ success: true, simulated: true, to: phoneNumber, text: smsMessage });
     }
 
     // 2. Real Semaphore Gateway
