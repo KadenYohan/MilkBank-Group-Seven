@@ -397,24 +397,33 @@ async function renderDonations(el) {
     </div>`;
   }
 
+  // C-03: Temp column in donations table
   html += `<div class="dash-card">
     <div class="dash-card-header"><span class="dash-card-title">${isStaff ? 'All Donations' : 'My Donations'}</span></div>
     <div class="dash-card-body no-pad">
       <table class="dash-table">
-        <thead><tr><th>ID</th><th>Donor</th><th>Date</th><th>Volume</th><th>Status</th><th>Actions</th></tr></thead>
+        <thead><tr><th>ID</th><th>Donor</th><th>Date</th><th>Volume</th><th>Status</th><th>Temp (°C)</th><th>Actions</th></tr></thead>
         <tbody>
-        ${donations.length === 0 ? '<tr><td colspan="6" class="empty-state">No donations yet</td></tr>' :
-          donations.map(d => `<tr>
+        ${donations.length === 0 ? '<tr><td colspan="7" class="empty-state">No donations yet</td></tr>' :
+          donations.map(d => {
+            const tempVal = d.storage_temp !== null && d.storage_temp !== undefined ? d.storage_temp : null;
+            const tempBad = tempVal !== null && Number(tempVal) > -20;
+            const tempCell = tempVal !== null
+              ? `<span style="color:${tempBad ? 'var(--clr-error)' : 'inherit'};font-weight:${tempBad ? '700' : 'normal'}">${tempBad ? '&#9888; ' : ''}${tempVal}°C</span>`
+              : '—';
+            return `<tr>
             <td><strong>${d.donation_id}</strong></td>
             <td>${escHtml(d.first_name)} ${escHtml(d.last_name)}</td>
             <td>${d.donation_date}</td>
             <td>${d.volume_ml} ml</td>
             <td><span class="badge ${d.storage_status.toLowerCase()}">${d.storage_status}</span></td>
+            <td>${tempCell}</td>
             <td><div class="btn-group">
               <button class="btn-dash btn-dash-outline btn-dash-sm" onclick="viewQR('${d.donation_id}')">QR</button>
               ${isStaff && d.storage_status === 'RAW' ? `<button class="btn-dash btn-dash-primary btn-dash-sm" onclick="logStorage('${d.donation_id}')">Log Storage</button>` : ''}
             </div></td>
-          </tr>`).join('')}
+          </tr>`;
+          }).join('')}
         </tbody>
       </table>
     </div>
@@ -433,20 +442,23 @@ async function renderBatches(el) {
     ${!isLabTech ? '<button class="btn-dash btn-dash-accent" onclick="openCreateBatchModal()">+ New Batch</button>' : ''}
   </div>`;
 
+  // BUG-07: Show bacterial count values alongside PASS/FAIL labels
   html += `<div class="dash-card">
     <div class="dash-card-header"><span class="dash-card-title">Pasteurization Batches</span></div>
     <div class="dash-card-body no-pad">
       <table class="dash-table">
-        <thead><tr><th>Batch ID</th><th>Status</th><th>Temp</th><th>Duration</th><th>Lab Pre</th><th>Lab Post</th><th>Volume</th><th>Actions</th></tr></thead>
+        <thead><tr><th>Batch ID</th><th>Status</th><th>Temp</th><th>Duration</th><th>Lab Pre</th><th>Pre Count</th><th>Lab Post</th><th>Post Count</th><th>Volume</th><th>Actions</th></tr></thead>
         <tbody>
-        ${batches.length === 0 ? '<tr><td colspan="8" class="empty-state">No batches</td></tr>' :
+        ${batches.length === 0 ? '<tr><td colspan="10" class="empty-state">No batches</td></tr>' :
           batches.map(b => `<tr>
             <td><strong>${b.batch_id}</strong></td>
             <td><span class="badge ${b.batch_status.toLowerCase()}">${b.batch_status}</span></td>
             <td>${b.temperature ? b.temperature + '°C' : '—'}</td>
             <td>${b.duration_minutes ? b.duration_minutes + ' min' : '—'}</td>
             <td>${b.pre_test_result ? `<span class="badge ${b.pre_test_result.toLowerCase()}">${b.pre_test_result}</span>` : '—'}</td>
+            <td style="font-size:0.78rem;color:var(--clr-text-muted)">${b.pre_bacterial_count || '—'}</td>
             <td>${b.post_test_result ? `<span class="badge ${b.post_test_result.toLowerCase()}">${b.post_test_result}</span>` : '—'}</td>
+            <td style="font-size:0.78rem;color:var(--clr-text-muted)">${b.post_bacterial_count || '—'}</td>
             <td>${b.total_volume_ml ? b.total_volume_ml + ' ml' : '—'}</td>
             <td><div class="btn-group">
               ${b.batch_status === 'PENDING' ? `<button class="btn-dash btn-dash-primary btn-dash-sm" onclick="openPasteurizeModal('${b.batch_id}')">Pasteurize</button>` : ''}
@@ -733,8 +745,10 @@ async function renderAudit(el) {
 async function renderProfile(el) {
   if (currentUser.role === 'donor') {
     const profile = await API.get('/api/donors/my/profile');
+    const q = profile.questionnaire_data ? (typeof profile.questionnaire_data === 'string' ? JSON.parse(profile.questionnaire_data) : profile.questionnaire_data) : null;
+    // C-08: Full donor health questionnaire form
     el.innerHTML = `
-      <div class="dash-card">
+      <div class="dash-card" style="margin-bottom:20px;">
         <div class="dash-card-header"><span class="dash-card-title">My Donor Profile</span></div>
         <div class="dash-card-body">
           <div class="dash-grid-2">
@@ -744,6 +758,78 @@ async function renderProfile(el) {
             <div><label class="form-label-dash">Blood Type</label><p>${profile.blood_type || 'Not set'}</p></div>
             <div><label class="form-label-dash">Contact</label><p>${profile.contact_number || 'Not set'}</p></div>
             <div><label class="form-label-dash">Enrollment</label><p>${profile.enrollment_date || 'Pending'}</p></div>
+          </div>
+        </div>
+      </div>
+      <div class="dash-card">
+        <div class="dash-card-header">
+          <span class="dash-card-title">Health Screening Questionnaire</span>
+          <span style="font-size:0.75rem;color:var(--clr-text-muted);">Required before your first donation (§3.2, DOH PHM)</span>
+        </div>
+        <div class="dash-card-body">
+          ${!profile.questionnaire_completed || !q ? '<div style="background:var(--clr-warning-bg,#fff3cd);border:1px solid var(--clr-warning,#d35400);padding:10px 14px;border-radius:6px;margin-bottom:16px;font-size:0.85rem;"><strong>Action Required:</strong> Please complete the health questionnaire below before your first milk donation.</div>' : ''}
+          <div class="form-group">
+            <label>Date of Birth *</label>
+            <input type="date" id="q-dob" class="dash-input" value="${profile.birth_date ? profile.birth_date.split('T')[0] : ''}" />
+          </div>
+          <div class="form-group">
+            <label>Contact Number *</label>
+            <input type="tel" id="q-contact" class="dash-input" value="${escHtml(profile.contact_number || '')}" placeholder="e.g., 09171234567" />
+          </div>
+          <div class="form-group">
+            <label>Home Address *</label>
+            <input type="text" id="q-address" class="dash-input" value="${escHtml(profile.home_address || '')}" placeholder="Street, City, Province" />
+          </div>
+          <div class="form-group">
+            <label>Blood Type *</label>
+            <select id="q-blood" class="dash-select">
+              ${['A+','A-','B+','B-','AB+','AB-','O+','O-'].map(t => `<option value="${t}" ${profile.blood_type === t ? 'selected' : ''}>${t}</option>`).join('')}
+            </select>
+          </div>
+          <hr style="margin:16px 0;border-color:var(--clr-border);" />
+          <p style="font-weight:600;margin-bottom:12px;font-size:0.9rem;">Clinical Health Risk Questions</p>
+          <div class="form-group" style="display:flex;align-items:center;gap:12px;">
+            <input type="checkbox" id="q-breastfeed" ${q && q.currently_breastfeeding ? 'checked' : ''} />
+            <label for="q-breastfeed" style="margin:0;">I am currently breastfeeding an infant</label>
+          </div>
+          <div class="form-group" style="display:flex;align-items:center;gap:12px;">
+            <input type="checkbox" id="q-surgery" ${q && q.recent_surgery ? 'checked' : ''} />
+            <label for="q-surgery" style="margin:0;">I have had surgery in the past 6 months</label>
+          </div>
+          <div class="form-group" style="display:flex;align-items:center;gap:12px;">
+            <input type="checkbox" id="q-transfusion" ${q && q.recent_transfusion ? 'checked' : ''} />
+            <label for="q-transfusion" style="margin:0;">I have received a blood transfusion in the past 12 months</label>
+          </div>
+          <div class="form-group" style="display:flex;align-items:center;gap:12px;">
+            <input type="checkbox" id="q-tattoo" ${q && q.tattoo_or_piercing_recent ? 'checked' : ''} />
+            <label for="q-tattoo" style="margin:0;">I have had a tattoo or body piercing in the past 12 months</label>
+          </div>
+          <div class="form-group">
+            <label>Smoking Status</label>
+            <select id="q-smoke" class="dash-select">
+              <option value="never" ${!q || q.smoking_status === 'never' ? 'selected' : ''}>Never smoked</option>
+              <option value="former" ${q && q.smoking_status === 'former' ? 'selected' : ''}>Former smoker (quit 6+ months ago)</option>
+              <option value="current" ${q && q.smoking_status === 'current' ? 'selected' : ''}>Current smoker</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Alcohol Use</label>
+            <select id="q-alcohol" class="dash-select">
+              <option value="none" ${!q || q.alcohol_use === 'none' ? 'selected' : ''}>None</option>
+              <option value="occasional" ${q && q.alcohol_use === 'occasional' ? 'selected' : ''}>Occasional (social)</option>
+              <option value="regular" ${q && q.alcohol_use === 'regular' ? 'selected' : ''}>Regular</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Current Medications (if any)</label>
+            <input type="text" id="q-meds" class="dash-input" value="${escHtml(q ? q.medications : '')}" placeholder="List any medications, or leave blank if none" />
+          </div>
+          <div class="form-group">
+            <label>Chronic Conditions (if any)</label>
+            <input type="text" id="q-chronic" class="dash-input" value="${escHtml(q ? q.chronic_conditions : '')}" placeholder="e.g., Diabetes, Hypertension, or leave blank" />
+          </div>
+          <div style="margin-top:16px;">
+            <button class="btn-dash btn-dash-primary" onclick="submitQuestionnaire()">Save Health Questionnaire</button>
           </div>
         </div>
       </div>`;
@@ -849,7 +935,13 @@ window.submitScreening = async function(donorId) {
 // ── Donation Modal ───────────────────────────────────────
 window.openDonationModal = async function() {
   const donors = await API.get('/api/donors');
-  const approved = donors.filter(d => d.screening_status === 'APPROVED');
+  // C-02: Only show donors who are APPROVED AND have all three tests NEGATIVE
+  const approved = donors.filter(d =>
+    d.screening_status === 'APPROVED' &&
+    d.hiv_result === 'NEGATIVE' &&
+    d.hep_b_result === 'NEGATIVE' &&
+    d.syphilis_result === 'NEGATIVE'
+  );
 
   openModal('Record New Donation', `
     <div class="form-group">
@@ -911,6 +1003,7 @@ window.viewQR = async function(donationId) {
 
 // ── Storage Logging ──────────────────────────────────────
 window.logStorage = async function(donationId) {
+  // C-03 + C-07: storage temp input with max constraint and live warning
   openModal(`Log Storage: ${donationId}`, `
     <div class="form-group">
       <label>Freezer Location</label>
@@ -921,25 +1014,54 @@ window.logStorage = async function(donationId) {
       </select>
     </div>
     <div class="form-group">
-      <label>Storage Temperature (°C)</label>
-      <input type="number" id="stor-temp" class="dash-input" value="-20" />
+      <label>Storage Temperature (°C) — Must be -20°C or colder</label>
+      <input type="number" id="stor-temp" class="dash-input" value="-20" max="-20" step="1"
+             oninput="checkStorageTemp()" />
+      <div id="stor-temp-warn" style="display:none;color:var(--clr-error);font-size:0.82rem;font-weight:600;margin-top:6px;padding:6px 10px;background:#fff0f0;border:1px solid var(--clr-error);border-radius:4px;">
+        SAFETY VIOLATION: Temperature must be -20°C or colder as per DOH guidelines.
+      </div>
     </div>
-    <p style="font-size:0.82rem;color:var(--clr-text-muted);margin:10px 0;">⚠️ Confirm that milk is stored at -20°C as per DOH guidelines.</p>
+    <p style="font-size:0.82rem;color:var(--clr-text-muted);margin:10px 0;">DOH guidelines require milk to be stored frozen at -20°C.</p>
     <div class="modal-actions">
       <button class="btn-dash btn-dash-outline" onclick="closeModal()">Cancel</button>
-      <button class="btn-dash btn-dash-primary" onclick="submitStorage('${donationId}')">Log Storage</button>
+      <button class="btn-dash btn-dash-primary" id="stor-submit-btn" onclick="submitStorage('${donationId}')">Log Storage</button>
     </div>
   `);
 };
 
+window.checkStorageTemp = function() {
+  const val = Number(document.getElementById('stor-temp').value);
+  const warn = document.getElementById('stor-temp-warn');
+  const btn = document.getElementById('stor-submit-btn');
+  if (val > -20) {
+    warn.style.display = 'block';
+    btn.disabled = true;
+    btn.style.opacity = '0.5';
+  } else {
+    warn.style.display = 'none';
+    btn.disabled = false;
+    btn.style.opacity = '1';
+  }
+};
+
 window.submitStorage = async function(donationId) {
+  const tempVal = Number(document.getElementById('stor-temp').value);
+  // C-03: Frontend guard — should already be blocked by checkStorageTemp() but double-check
+  if (tempVal > -20) {
+    toast('SAFETY VIOLATION: Storage temperature must be -20°C or colder.', 'error');
+    return;
+  }
   const result = await API.post('/api/milk/storage', {
     donation_id: donationId,
     freezer_location: document.getElementById('stor-loc').value,
-    storage_temp: document.getElementById('stor-temp').value
+    storage_temp: tempVal
   });
   closeModal();
-  toast(result.success ? result.message : result.error, result.success ? 'success' : 'error');
+  if (result.safety_alert) {
+    toast('SAFETY VIOLATION: ' + result.error, 'error');
+  } else {
+    toast(result.success ? result.message : result.error, result.success ? 'success' : 'error');
+  }
   loadPage('donations');
 };
 
@@ -1036,23 +1158,24 @@ window.submitPasteurize = async function(batchId) {
 
 // ── Lab Test Modal ───────────────────────────────────────
 window.openLabTestModal = function(batchId) {
+  // C-05: Both bacterial count fields are required (§3.7)
   openModal(`Lab Test: ${batchId}`, `
-    <p style="font-size:0.82rem;color:var(--clr-text-muted);margin-bottom:12px;">Record bacterial count results before and after pasteurization.</p>
+    <p style="font-size:0.82rem;color:var(--clr-text-muted);margin-bottom:12px;">Record bacterial count results before and after pasteurization. All fields are required per DOH §3.7.</p>
     <div class="form-group">
       <label>Pre-Pasteurization Result *</label>
       <select id="lab-pre" class="dash-select"><option value="PASS">PASS</option><option value="FAIL">FAIL</option></select>
     </div>
     <div class="form-group">
-      <label>Pre Bacterial Count</label>
-      <input type="text" id="lab-pre-count" class="dash-input" placeholder="e.g., <10 CFU/ml" />
+      <label>Pre-Pasteurization Bacterial Count * <span style="font-size:0.75rem;color:var(--clr-text-muted);">(e.g., &lt;10 CFU/ml)</span></label>
+      <input type="text" id="lab-pre-count" class="dash-input" placeholder="e.g., <10 CFU/ml" required />
     </div>
     <div class="form-group">
       <label>Post-Pasteurization Result *</label>
       <select id="lab-post" class="dash-select"><option value="PASS">PASS</option><option value="FAIL">FAIL</option></select>
     </div>
     <div class="form-group">
-      <label>Post Bacterial Count</label>
-      <input type="text" id="lab-post-count" class="dash-input" placeholder="e.g., 0 CFU/ml" />
+      <label>Post-Pasteurization Bacterial Count * <span style="font-size:0.75rem;color:var(--clr-text-muted);">(e.g., 0 CFU/ml)</span></label>
+      <input type="text" id="lab-post-count" class="dash-input" placeholder="e.g., 0 CFU/ml" required />
     </div>
     <div class="modal-actions">
       <button class="btn-dash btn-dash-outline" onclick="closeModal()">Cancel</button>
@@ -1062,12 +1185,19 @@ window.openLabTestModal = function(batchId) {
 };
 
 window.submitLabTest = async function(batchId) {
+  // C-05: Validate bacterial counts before submitting
+  const preCount = document.getElementById('lab-pre-count').value.trim();
+  const postCount = document.getElementById('lab-post-count').value.trim();
+  if (!preCount || !postCount) {
+    toast('Both pre and post bacterial count values are required (e.g., "<10 CFU/ml").', 'error');
+    return;
+  }
   const result = await API.post('/api/batches/labtest', {
     batch_id: batchId,
     pre_test_result: document.getElementById('lab-pre').value,
     post_test_result: document.getElementById('lab-post').value,
-    pre_bacterial_count: document.getElementById('lab-pre-count').value,
-    post_bacterial_count: document.getElementById('lab-post-count').value
+    pre_bacterial_count: preCount,
+    post_bacterial_count: postCount
   });
   closeModal();
   toast(result.success ? result.message : result.error, result.success ? (result.batch_status === 'PASS' ? 'success' : 'warning') : 'error');
@@ -1077,6 +1207,7 @@ window.submitLabTest = async function(batchId) {
 // ── Batch Details ────────────────────────────────────────
 window.viewBatchDetails = async function(batchId) {
   const data = await API.get(`/api/batches/${batchId}`);
+  // BUG-07: Show bacterial count values in details modal
   openModal(`Batch Details: ${batchId}`, `
     <div class="dash-grid-2" style="margin-bottom:16px;">
       <div><label class="form-label-dash">Status</label><span class="badge ${data.batch_status.toLowerCase()}">${data.batch_status}</span></div>
@@ -1086,6 +1217,15 @@ window.viewBatchDetails = async function(batchId) {
       <div><label class="form-label-dash">Storage</label><p>${data.storage_location || '—'}</p></div>
       <div><label class="form-label-dash">Technician</label><p>${data.technician_name || '—'}</p></div>
     </div>
+    ${data.pre_test_result ? `<div style="background:var(--clr-bg);padding:10px 14px;border-radius:6px;margin-bottom:14px;">
+      <p style="font-weight:700;font-size:0.82rem;margin-bottom:8px;">Lab Results</p>
+      <div class="dash-grid-2">
+        <div><label class="form-label-dash">Pre-Pasteurization</label><span class="badge ${data.pre_test_result.toLowerCase()}">${data.pre_test_result}</span></div>
+        <div><label class="form-label-dash">Pre Bacterial Count</label><p style="font-family:monospace;">${data.pre_bacterial_count || '—'}</p></div>
+        <div><label class="form-label-dash">Post-Pasteurization</label><span class="badge ${data.post_test_result.toLowerCase()}">${data.post_test_result}</span></div>
+        <div><label class="form-label-dash">Post Bacterial Count</label><p style="font-family:monospace;">${data.post_bacterial_count || '—'}</p></div>
+      </div>
+    </div>` : ''}
     <h4 style="font-size:0.85rem;font-weight:700;margin-bottom:8px;">Chain of Custody</h4>
     <div class="custody-timeline">
       ${(data.custody || []).map(c => `
@@ -1124,10 +1264,11 @@ window.approveRequest = async function(reqId) {
 };
 
 window.confirmPayment = async function(reqId) {
+  // C-07: Payment amount with proper number constraints
   openModal('Confirm Payment', `
     <div class="form-group">
       <label>Payment Amount (₱)</label>
-      <input type="number" id="pay-amount" class="dash-input" placeholder="Enter amount" />
+      <input type="number" id="pay-amount" class="dash-input" placeholder="Enter amount" min="0" step="0.01" />
     </div>
     <div class="modal-actions">
       <button class="btn-dash btn-dash-outline" onclick="closeModal()">Cancel</button>
@@ -1216,16 +1357,54 @@ window.submitRequest = async function() {
   loadPage('requests');
 };
 
-// ── Track Order ──────────────────────────────────────────
+// ── Questionnaire Submit (C-08) ──────────────────────────
+window.submitQuestionnaire = async function() {
+  const result = await API.post('/api/donors/questionnaire', {
+    birth_date: document.getElementById('q-dob').value,
+    contact_number: document.getElementById('q-contact').value,
+    home_address: document.getElementById('q-address').value,
+    blood_type: document.getElementById('q-blood').value,
+    currently_breastfeeding: document.getElementById('q-breastfeed').checked,
+    recent_surgery: document.getElementById('q-surgery').checked,
+    recent_transfusion: document.getElementById('q-transfusion').checked,
+    tattoo_or_piercing_recent: document.getElementById('q-tattoo').checked,
+    smoking_status: document.getElementById('q-smoke').value,
+    alcohol_use: document.getElementById('q-alcohol').value,
+    medications: document.getElementById('q-meds').value,
+    chronic_conditions: document.getElementById('q-chronic').value
+  });
+  if (result.success) {
+    toast('Health questionnaire saved successfully.', 'success');
+    loadPage('profile');
+  } else {
+    toast(result.error || 'Failed to save questionnaire.', 'error');
+  }
+};
+
 window.trackOrder = async function() {
   const code = document.getElementById('track-code-input').value.trim();
   if (!code) return toast('Enter a tracking code.', 'error');
 
-  const result = await API.get(`/api/requests/track/${code}`);
+  // C-06: Handle 410 Gone (expired tracking code) by reading raw response
+  const res = await fetch(`/api/requests/track/${code}`);
+  const result = await res.json();
   const el = document.getElementById('track-result');
 
+  // C-06: Expired tracking code (DISPENSED or CANCELLED)
+  if (res.status === 410 && result.expired) {
+    el.innerHTML = `<div class="dash-card" style="border-color:var(--clr-text-muted);">
+      <div class="dash-card-body" style="text-align:center;padding:32px;">
+        <div style="font-size:2rem;margin-bottom:12px;">&#10003;</div>
+        <h3 style="margin-bottom:8px;">Tracking Code Expired</h3>
+        <p style="color:var(--clr-text-muted);">${escHtml(result.error)}</p>
+        <span class="badge ${result.status.toLowerCase()}" style="margin-top:12px;display:inline-block;">${result.status}</span>
+      </div>
+    </div>`;
+    return;
+  }
+
   if (result.error) {
-    el.innerHTML = `<div class="empty-state"><div class="empty-state-icon">❌</div><h3>Not Found</h3><p>${result.error}</p></div>`;
+    el.innerHTML = `<div class="empty-state"><div class="empty-state-icon" style="font-size:2rem;">&#10007;</div><h3>Not Found</h3><p>${escHtml(result.error)}</p></div>`;
     return;
   }
 

@@ -61,14 +61,32 @@ router.get('/my/profile', requireAuth, requireRole('donor'), async (req, res) =>
   }
 });
 
-// POST /api/donors/questionnaire — Submit health questionnaire
+// POST /api/donors/questionnaire — Submit health questionnaire (C-08 expanded)
 router.post('/questionnaire', requireAuth, requireRole('donor'), async (req, res) => {
-  const { birth_date, contact_number, home_address, blood_type } = req.body;
+  const {
+    birth_date, contact_number, home_address, blood_type,
+    // C-08: Extended health risk screening fields (§3.2, Use Case 5.1)
+    currently_breastfeeding, medications, recent_surgery, smoking_status,
+    alcohol_use, chronic_conditions, recent_transfusion, tattoo_or_piercing_recent
+  } = req.body;
 
   try {
     const donorRes = await db.query('SELECT * FROM donors WHERE user_id = $1', [req.session.user.user_id]);
     const donor = donorRes.rows[0];
     if (!donor) return res.status(404).json({ error: 'Donor profile not found.' });
+
+    // Collect all health risk answers into structured JSON
+    const questionnaireData = {
+      submitted_at: new Date().toISOString(),
+      currently_breastfeeding: currently_breastfeeding === true || currently_breastfeeding === 'true',
+      medications: medications || '',
+      recent_surgery: recent_surgery === true || recent_surgery === 'true',
+      smoking_status: smoking_status || 'never',
+      alcohol_use: alcohol_use || 'none',
+      chronic_conditions: chronic_conditions || '',
+      recent_transfusion: recent_transfusion === true || recent_transfusion === 'true',
+      tattoo_or_piercing_recent: tattoo_or_piercing_recent === true || tattoo_or_piercing_recent === 'true'
+    };
 
     await db.query(`
       UPDATE donors SET
@@ -76,9 +94,10 @@ router.post('/questionnaire', requireAuth, requireRole('donor'), async (req, res
         contact_number = $2,
         home_address = $3,
         blood_type = $4,
+        questionnaire_data = $5,
         questionnaire_completed = 1
-      WHERE donor_id = $5
-    `, [birth_date || null, contact_number, home_address, blood_type, donor.donor_id]);
+      WHERE donor_id = $6
+    `, [birth_date || null, contact_number, home_address, blood_type, JSON.stringify(questionnaireData), donor.donor_id]);
 
     await logAudit(req.session.user.user_id, req.session.user.username, 'QUESTIONNAIRE_SUBMITTED', `Donor: ${donor.donor_id}`, req.ip);
 
@@ -88,6 +107,7 @@ router.post('/questionnaire', requireAuth, requireRole('donor'), async (req, res
     res.status(500).json({ error: 'Internal server error' });
   }
 });
+
 
 // POST /api/donors/screening — Record screening results (Nurse/Admin)
 router.post('/screening', requireAuth, requireRole('nurse', 'admin'), async (req, res) => {

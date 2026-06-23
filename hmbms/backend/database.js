@@ -64,6 +64,11 @@ async function initDatabase() {
     );
   `);
 
+  // C-08: Add questionnaire_data JSONB column if it doesn't exist yet
+  await db.query(`
+    ALTER TABLE donors ADD COLUMN IF NOT EXISTS questionnaire_data JSONB DEFAULT NULL;
+  `);
+
   // ── Screening Records ────────────────────────────────────
   await db.query(`
     CREATE TABLE IF NOT EXISTS screening_records (
@@ -307,9 +312,16 @@ async function initDatabase() {
         // Create donor profile for donor user
         if (user.role === 'donor') {
           const donor_id = 'DNR-' + Date.now().toString(36).toUpperCase();
+          // C-02 FIX: Seed donor with proper NEGATIVE test results so the donate
+          // endpoint (which requires hiv_result=NEGATIVE etc.) doesn't block them
           await client.query(`
-            INSERT INTO donors (donor_id, user_id, first_name, last_name, contact_number, blood_type, screening_status, questionnaire_completed, enrollment_date)
-            VALUES ($1, $2, $3, $4, $5, $6, 'APPROVED', 1, CURRENT_DATE)
+            INSERT INTO donors (
+              donor_id, user_id, first_name, last_name, contact_number, blood_type,
+              hiv_result, hep_b_result, syphilis_result,
+              physician_approval, screening_status,
+              questionnaire_completed, screening_date, enrollment_date
+            )
+            VALUES ($1, $2, $3, $4, $5, $6, 'NEGATIVE', 'NEGATIVE', 'NEGATIVE', 'APPROVED', 'APPROVED', 1, CURRENT_DATE, CURRENT_DATE)
           `, [donor_id, user.user_id, user.first_name, user.last_name, user.phone, 'O+']);
         }
 

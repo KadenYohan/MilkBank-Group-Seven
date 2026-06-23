@@ -87,6 +87,13 @@ router.post('/dispense', requireAuth, requireRole('admin', 'nurse'), async (req,
     const request = requestRes.rows[0];
     if (!request) return res.status(404).json({ error: 'Request not found.' });
 
+    // C-04: Prescription vault enforcement (TC-HMB-06, §3.8)
+    if (!request.prescription_file || request.prescription_file.trim() === '') {
+      return res.status(400).json({
+        error: "Dispensing blocked: No doctor's prescription is on file for this request. The recipient must upload a prescription before milk can be dispensed."
+      });
+    }
+
     if (!request.payment_confirmed) {
       return res.status(400).json({ error: 'Payment must be confirmed before dispensing.' });
     }
@@ -97,7 +104,7 @@ router.post('/dispense', requireAuth, requireRole('admin', 'nurse'), async (req,
       // Update batch status
       await client.query("UPDATE pasteurization_batches SET batch_status = 'DISPENSED', updated_at = CURRENT_TIMESTAMP WHERE batch_id = $1", [batch_id]);
 
-      // Update donations
+      // C-01 FIX: Update donation statuses unconditionally (overrides any prior QUARANTINED state)
       const donationIdsRes = await client.query('SELECT donation_id FROM batch_donations WHERE batch_id = $1', [batch_id]);
       for (const d of donationIdsRes.rows) {
         await client.query("UPDATE milk_donations SET storage_status = 'DISPENSED' WHERE donation_id = $1", [d.donation_id]);

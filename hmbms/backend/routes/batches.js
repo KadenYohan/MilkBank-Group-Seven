@@ -127,6 +127,14 @@ router.post('/labtest', requireAuth, requireRole('medtech'), async (req, res) =>
     return res.status(400).json({ error: 'Both pre and post test results are required.' });
   }
 
+  // C-05: Bacterial count is mandatory per §3.7 (DOH PHM Guidelines)
+  if (!pre_bacterial_count || !post_bacterial_count ||
+      String(pre_bacterial_count).trim() === '' || String(post_bacterial_count).trim() === '') {
+    return res.status(400).json({
+      error: 'Both pre-pasteurization and post-pasteurization bacterial count values are required before updating batch status (e.g., \'<10 CFU/ml\' or \'0 CFU/ml\').'
+    });
+  }
+
   try {
     const batchRes = await db.query('SELECT * FROM pasteurization_batches WHERE batch_id = $1', [batch_id]);
     const batch = batchRes.rows[0];
@@ -159,12 +167,14 @@ router.post('/labtest', requireAuth, requireRole('medtech'), async (req, res) =>
           expiration_date = $6,
           updated_at = CURRENT_TIMESTAMP
         WHERE batch_id = $7
-      `, [pre_test_result, post_test_result, pre_bacterial_count || '', post_bacterial_count || '', newStatus, expirationDate, batch_id]);
+      `, [pre_test_result, post_test_result, String(pre_bacterial_count).trim(), String(post_bacterial_count).trim(), newStatus, expirationDate, batch_id]);
 
-      // Update linked donations
+      // C-01 FIX: Update linked donation statuses unconditionally (overrides any prior QUARANTINED state)
+      // PASS → PASTEURIZED, LOCKED → QUARANTINED
       const statusUpdate = newStatus === 'PASS' ? 'PASTEURIZED' : 'QUARANTINED';
       const donationIdsRes = await client.query('SELECT donation_id FROM batch_donations WHERE batch_id = $1', [batch_id]);
       for (const d of donationIdsRes.rows) {
+        // No WHERE condition on current status — always override to the correct post-lab status
         await client.query('UPDATE milk_donations SET storage_status = $1 WHERE donation_id = $2', [statusUpdate, d.donation_id]);
       }
 

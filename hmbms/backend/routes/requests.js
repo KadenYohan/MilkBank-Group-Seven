@@ -10,6 +10,7 @@ const { v4: uuidv4 } = require('uuid');
 const multer = require('multer');
 const path = require('path');
 const db = require('../db');
+const { sendMilkReadySMS } = require('../utils/smsService');
 
 // Multer config for prescription uploads
 const storage = multer.diskStorage({
@@ -87,7 +88,16 @@ router.get('/track/:code', async (req, res) => {
     `, [req.params.code]);
     const request = requestRes.rows[0];
 
-    if (!request) return res.status(404).json({ error: 'Invalid tracking code.' });
+    if (!request) return res.status(404).json({ error: 'Invalid tracking code. No request found with this code.' });
+
+    // C-06: Tracking code expiry — invalidate for completed or cancelled requests (§3.8)
+    if (request.request_status === 'DISPENSED' || request.request_status === 'CANCELLED') {
+      return res.status(410).json({
+        error: `This tracking code has expired. The milk request has been ${request.request_status.toLowerCase()}.`,
+        expired: true,
+        status: request.request_status
+      });
+    }
 
     res.json(request);
   } catch (err) {
@@ -95,6 +105,7 @@ router.get('/track/:code', async (req, res) => {
     res.status(500).json({ error: 'Internal server error' });
   }
 });
+
 
 // GET /api/requests — List requests
 router.get('/', requireAuth, async (req, res) => {
@@ -206,13 +217,22 @@ router.put('/:id/ready', requireAuth, requireRole('admin', 'nurse'), async (req,
       const requestRes = await client.query('SELECT * FROM milk_requests WHERE request_id = $1', [req.params.id]);
       const request = requestRes.rows[0];
       if (request) {
-        const recipientRes = await client.query('SELECT user_id FROM recipients WHERE recipient_id = $1', [request.recipient_id]);
+        const recipientRes = await client.query('SELECT user_id, infant_name FROM recipients WHERE recipient_id = $1', [request.recipient_id]);
         const recipient = recipientRes.rows[0];
         if (recipient) {
           await client.query(`
             INSERT INTO notifications (notification_id, user_id, type, title, message)
             VALUES ($1, $2, 'MILK_READY', 'Milk Ready for Pickup', $3)
           `, [uuidv4(), recipient.user_id, `Your milk request (${request.tracking_code}) is ready for pickup/dispensing.`]);
+
+          // Trigger SMS Notification (SRS §4.6)
+          const userRes = await client.query('SELECT phone FROM users WHERE user_id = $1', [recipient.user_id]);
+          const user = userRes.rows[0];
+          if (user && user.phone) {
+            // Fired asynchronously so response is immediate (<60s requirement)
+            sendMilkReadySMS(user.phone, request.tracking_code, recipient.infant_name)
+              .catch(err => console.error('Failed to trigger SMS:', err));
+          }
         }
       }
       await client.query('COMMIT');

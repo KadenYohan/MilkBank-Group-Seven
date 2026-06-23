@@ -23,9 +23,19 @@ router.post('/donate', requireAuth, requireRole('nurse', 'admin'), async (req, r
   }
 
   try {
-    const donorRes = await db.query('SELECT * FROM donors WHERE donor_id = $1 AND screening_status = $2', [donor_id, 'APPROVED']);
+    // C-02: Require fully screened donor — APPROVED status AND all three test results must be NEGATIVE
+    const donorRes = await db.query(`
+      SELECT * FROM donors
+      WHERE donor_id = $1
+        AND screening_status = $2
+        AND hiv_result = 'NEGATIVE'
+        AND hep_b_result = 'NEGATIVE'
+        AND syphilis_result = 'NEGATIVE'
+    `, [donor_id, 'APPROVED']);
     const donor = donorRes.rows[0];
-    if (!donor) return res.status(404).json({ error: 'Approved donor not found.' });
+    if (!donor) return res.status(404).json({
+      error: 'Eligible donor not found. The donor must be fully screened (HIV, Hepatitis B, and Syphilis: NEGATIVE) and have APPROVED status before a donation can be recorded.'
+    });
 
     const donation_id = 'DON-' + Date.now().toString(36).toUpperCase();
     const labelData = JSON.stringify({
@@ -104,6 +114,14 @@ router.post('/storage', requireAuth, requireRole('nurse', 'admin', 'medtech'), a
   if (!donation_id) return res.status(400).json({ error: 'Donation ID is required.' });
 
   try {
+    // C-03: Storage temperature safety check (DOH guidelines: must be ≤ -20°C)
+    if (Number(storage_temp) > -20) {
+      return res.status(400).json({
+        error: `SAFETY VIOLATION: Storage temperature must be -20°C or colder as per DOH guidelines. Entered: ${storage_temp}°C is too warm. Milk must be stored frozen.`,
+        safety_alert: true
+      });
+    }
+
     const client = await db.pool.connect();
     try {
       await client.query('BEGIN');
@@ -114,12 +132,12 @@ router.post('/storage', requireAuth, requireRole('nurse', 'admin', 'medtech'), a
           storage_temp = $2,
           storage_timestamp = CURRENT_TIMESTAMP
         WHERE donation_id = $3
-      `, [freezer_location || 'Freezer A', storage_temp || -20, donation_id]);
+      `, [freezer_location || 'Freezer A', Number(storage_temp) || -20, donation_id]);
 
       await client.query(`
         INSERT INTO chain_of_custody (reference_id, reference_type, action, performed_by, location, temperature, notes)
         VALUES ($1, 'DONATION', 'STORED', $2, $3, $4, $5)
-      `, [donation_id, req.session.user.user_id, freezer_location || 'Freezer A', storage_temp || -20, `Stored at ${storage_temp || -20}°C`]);
+      `, [donation_id, req.session.user.user_id, freezer_location || 'Freezer A', Number(storage_temp) || -20, `Stored at ${storage_temp}°C`]);
 
       await client.query('COMMIT');
     } catch (err) {
