@@ -127,8 +127,27 @@ router.post('/dispense', requireAuth, requireRole('admin', 'nurse'), async (req,
         VALUES ($1, 'BATCH', 'DISPENSED', $2, $3)
       `, [batch_id, req.session.user.user_id, `Dispensed for request ${request_id}`]);
 
-      // Notify recipient
+      // H-12: Write distribution record for traceability (SRS §6)
       const { v4: uuidv4 } = require('uuid');
+      const distId = 'DIST-' + Date.now().toString(36).toUpperCase();
+      const requestFull = await client.query('SELECT * FROM milk_requests WHERE request_id = $1', [request_id]);
+      const req_data = requestFull.rows[0];
+      if (req_data) {
+        await client.query(`
+          INSERT INTO distributions (distribution_id, request_id, batch_id, recipient_id, dispensed_by, volume_ml, fee_amount)
+          VALUES ($1, $2, $3, $4, $5, $6, $7)
+        `, [distId, request_id, batch_id, req_data.recipient_id, req.session.user.user_id,
+            req_data.requested_volume_ml, req_data.payment_amount || 0]);
+      }
+
+      // H-13: Upsert storage_inventory record to REMOVED status
+      await client.query(`
+        INSERT INTO storage_inventory (batch_id, inventory_status)
+        VALUES ($1, 'REMOVED')
+        ON CONFLICT (batch_id) DO UPDATE SET inventory_status = 'REMOVED', last_checked = CURRENT_TIMESTAMP
+      `, [batch_id]);
+
+      // Notify recipient
       const recipientRes = await client.query('SELECT user_id FROM recipients WHERE recipient_id = $1', [request.recipient_id]);
       const recipient = recipientRes.rows[0];
       if (recipient) {

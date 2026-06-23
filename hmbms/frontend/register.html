@@ -217,8 +217,14 @@
         const data = await res.json();
 
         if (data.success) {
-          alert('✅ ' + data.message + '\nYour ID: ' + data.user_id);
-          window.location.href = '/login.html';
+          // L-05: Redirect directly to dashboard — session is active after registration.
+          // New donors will see the health questionnaire prompt on their profile page.
+          const role = document.getElementById('reg-role').value;
+          const message = role === 'donor'
+            ? `Registration successful! Your Donor ID is ${data.user_id}. You will now be taken to your dashboard to complete the health questionnaire.`
+            : `Registration successful! Your Recipient ID is ${data.user_id}. You will now be taken to your dashboard.`;
+          alert('✅ ' + message);
+          window.location.href = '/dashboard';
         } else {
           alert('❌ ' + (data.error || 'Registration failed.'));
           document.getElementById('btn-text').textContent = originalText;

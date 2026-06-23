@@ -10,10 +10,25 @@ const { v4: uuidv4 } = require('uuid');
 const db = require('../db');
 
 // GET /api/donors — List all donors (Admin, Nurse)
+// L-01: Nurses receive a PII-restricted view: home_address is omitted,
+// contact_number is masked (SRS §3.6 — Privacy)
 router.get('/', requireAuth, requireRole('admin', 'nurse'), async (req, res) => {
   try {
+    const isNurse = req.session.user.role === 'nurse';
+
     const donorsRes = await db.query(`
-      SELECT d.*, u.username, u.status as account_status
+      SELECT
+        d.donor_id, d.user_id, d.first_name, d.last_name,
+        d.birth_date, d.blood_type,
+        ${isNurse
+          ? "CONCAT('***-***-', RIGHT(COALESCE(d.contact_number,''), 4)) AS contact_number, NULL AS home_address"
+          : 'd.contact_number, d.home_address'}
+        ,
+        d.hiv_result, d.hep_b_result, d.syphilis_result,
+        d.physician_approval, d.screening_status, d.screening_date,
+        d.questionnaire_completed, d.enrollment_date, d.notes,
+        d.created_at,
+        u.username, u.status as account_status
       FROM donors d
       JOIN users u ON d.user_id = u.user_id
       ORDER BY d.created_at DESC

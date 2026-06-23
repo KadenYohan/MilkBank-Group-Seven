@@ -239,7 +239,37 @@ async function initDatabase() {
     );
   `);
 
-  // ── Seed Default Users ──────────────────────────────────
+  // ── Distributions Table (H-12, SRS §6) ────────────────────────────────────
+  await db.query(`
+    CREATE TABLE IF NOT EXISTS distributions (
+      id SERIAL PRIMARY KEY,
+      distribution_id VARCHAR(255) UNIQUE NOT NULL,
+      request_id VARCHAR(255) NOT NULL REFERENCES milk_requests(request_id),
+      batch_id VARCHAR(255) NOT NULL REFERENCES pasteurization_batches(batch_id),
+      recipient_id VARCHAR(255) NOT NULL REFERENCES recipients(recipient_id),
+      dispensed_by VARCHAR(255) NOT NULL REFERENCES users(user_id),
+      volume_ml REAL NOT NULL CHECK(volume_ml > 0),
+      fee_amount REAL DEFAULT 0,
+      dispensed_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+      notes TEXT
+    );
+  `);
+
+  // ── Storage Inventory Table (H-13, SRS §6) ───────────────────────────────
+  await db.query(`
+    CREATE TABLE IF NOT EXISTS storage_inventory (
+      id SERIAL PRIMARY KEY,
+      batch_id VARCHAR(255) UNIQUE NOT NULL REFERENCES pasteurization_batches(batch_id) ON DELETE CASCADE,
+      location VARCHAR(255) NOT NULL DEFAULT 'Freezer A',
+      temperature REAL DEFAULT -20,
+      stored_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+      last_checked TIMESTAMP,
+      inventory_status VARCHAR(50) DEFAULT 'STORED' CHECK(inventory_status IN ('STORED','REMOVED','EXPIRED')),
+      notes TEXT
+    );
+  `);
+
+  // ── Seed Default Users ──────────────────────────────────────────────────────
   const userCountRes = await db.query('SELECT COUNT(*) as count FROM users');
   const count = parseInt(userCountRes.rows[0].count, 10);
   

@@ -3,6 +3,24 @@
 // Single-Page Application logic for all 5 role dashboards
 // ============================================================
 
+// H-09: Offline / connection status detection
+(function() {
+  function updateOnlineStatus() {
+    let banner = document.getElementById('offline-banner');
+    if (!banner) {
+      banner = document.createElement('div');
+      banner.id = 'offline-banner';
+      banner.style.cssText = 'position:fixed;top:0;left:0;right:0;z-index:9999;padding:8px 20px;background:#dc2626;color:#fff;text-align:center;font-size:0.82rem;font-weight:600;display:none;';
+      banner.textContent = 'You are offline. Some features may not be available. Please check your internet connection.';
+      document.body.prepend(banner);
+    }
+    banner.style.display = navigator.onLine ? 'none' : 'block';
+  }
+  window.addEventListener('online', updateOnlineStatus);
+  window.addEventListener('offline', updateOnlineStatus);
+  document.addEventListener('DOMContentLoaded', updateOnlineStatus);
+})();
+
 const API = {
   get: (url) => fetch(url).then(r => r.json()),
   post: (url, data) => fetch(url, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(data) }).then(r => r.json()),
@@ -618,20 +636,69 @@ async function renderRecall(el) {
     </div>`;
 }
 
-// ── APPOINTMENTS PAGE ────────────────────────────────────
+// ── APPOINTMENTS PAGE ──────────────────────────────────────────────────────
+// H-10: Calendar view toggle
+let apptViewMode = 'list';
 async function renderAppointments(el) {
   const appts = await API.get('/api/appointments');
   const isStaff = ['admin', 'nurse'].includes(currentUser.role);
 
-  let html = '';
-  if (isStaff) {
-    html += `<div class="action-bar" style="margin-bottom:16px;">
-      <span>${appts.length} appointments</span>
-      <button class="btn-dash btn-dash-accent" onclick="openAppointmentModal()">+ New Appointment</button>
-    </div>`;
-  }
+  const today = new Date();
+  const year = today.getFullYear();
+  const month = today.getMonth();
 
-  html += `<div class="dash-card">
+  let html = `<div class="action-bar" style="margin-bottom:16px;">
+    <span>${appts.length} appointment${appts.length !== 1 ? 's' : ''}</span>
+    <div class="btn-group">
+      <button class="btn-dash ${apptViewMode === 'list' ? 'btn-dash-primary' : 'btn-dash-outline'}" onclick="setApptView('list')">List</button>
+      <button class="btn-dash ${apptViewMode === 'calendar' ? 'btn-dash-primary' : 'btn-dash-outline'}" onclick="setApptView('calendar')">Calendar</button>
+      ${isStaff ? '<button class="btn-dash btn-dash-accent" onclick="openAppointmentModal()">+ New Appointment</button>' : ''}
+    </div>
+  </div>`;
+
+  if (apptViewMode === 'calendar') {
+    // Build calendar grid
+    const monthNames = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+    const firstDay = new Date(year, month, 1).getDay();
+    const daysInMonth = new Date(year, month + 1, 0).getDate();
+
+    // Group appointments by date
+    const apptByDate = {};
+    appts.forEach(a => {
+      const d = a.appointment_date ? a.appointment_date.substring(0, 10) : null;
+      if (d) { if (!apptByDate[d]) apptByDate[d] = []; apptByDate[d].push(a); }
+    });
+
+    let calCells = '';
+    for (let i = 0; i < firstDay; i++) calCells += '<div class="cal-cell cal-empty"></div>';
+    for (let d = 1; d <= daysInMonth; d++) {
+      const dateStr = `${year}-${String(month + 1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+      const dayAppts = apptByDate[dateStr] || [];
+      const isToday = d === today.getDate() && month === today.getMonth() && year === today.getFullYear();
+      calCells += `<div class="cal-cell ${isToday ? 'cal-today' : ''}">
+        <div class="cal-day-num">${d}</div>
+        ${dayAppts.map(a => `<div class="cal-event cal-event-${a.status.toLowerCase()}" title="${a.first_name ? a.first_name + ' ' + a.last_name : 'General'} \u2014 ${a.program || ''} @ ${a.appointment_time || 'TBD'}">
+          ${a.first_name ? a.first_name : 'Appt'}
+        </div>`).join('')}
+      </div>`;
+    }
+
+    html += `<div class="dash-card">
+      <div class="dash-card-header">
+        <span class="dash-card-title">${monthNames[month]} ${year}</span>
+      </div>
+      <div class="cal-grid-wrap">
+        <div class="cal-header">${['Sun','Mon','Tue','Wed','Thu','Fri','Sat'].map(d => `<div>${d}</div>`).join('')}</div>
+        <div class="cal-grid">${calCells}</div>
+      </div>
+      <div style="padding:12px 20px;display:flex;gap:10px;flex-wrap:wrap;border-top:1px solid var(--clr-border);">
+        <span style="display:flex;align-items:center;gap:5px;font-size:0.75rem;"><span style="width:10px;height:10px;border-radius:3px;background:#d1fae5;display:inline-block;"></span>Scheduled</span>
+        <span style="display:flex;align-items:center;gap:5px;font-size:0.75rem;"><span style="width:10px;height:10px;border-radius:3px;background:#e3f0fb;display:inline-block;"></span>Completed</span>
+        <span style="display:flex;align-items:center;gap:5px;font-size:0.75rem;"><span style="width:10px;height:10px;border-radius:3px;background:#fde8e8;display:inline-block;"></span>Cancelled</span>
+      </div>
+    </div>`;
+  } else {
+    html += `<div class="dash-card">
     <div class="dash-card-header"><span class="dash-card-title">Appointments</span></div>
     <div class="dash-card-body no-pad">
       <table class="dash-table">
@@ -641,7 +708,7 @@ async function renderAppointments(el) {
           appts.map(a => `<tr>
             <td>${a.appointment_id}</td>
             <td>${a.first_name ? escHtml(a.first_name + ' ' + a.last_name) : '—'}</td>
-            <td>${(a.program || '').replace('_', ' ')}</td>
+            <td>${(a.program || '').replace(/_/g, ' ')}</td>
             <td>${a.appointment_date}</td>
             <td>${a.appointment_time || '—'}</td>
             <td><span class="badge ${a.status.toLowerCase()}">${a.status}</span></td>
@@ -654,21 +721,58 @@ async function renderAppointments(el) {
       </table>
     </div>
   </div>`;
+  }
 
   el.innerHTML = html;
 }
 
-// ── REPORTS PAGE ─────────────────────────────────────────
+window.setApptView = function(mode) {
+  apptViewMode = mode;
+  loadPage('appointments');
+};
+
+// ── REPORTS PAGE ────────────────────────────────────────────────────────────────
+// H-05: Period filter, H-06: Formatted print, L-07: Chart.js charts
+let reportPeriod = 'all';
 async function renderReports(el) {
   const stats = await API.get('/api/reports/dashboard');
   const batchResults = await API.get('/api/reports/batch-results');
+  const collections = await API.get(`/api/reports/collections?period=${reportPeriod}`);
+  const trends = await API.get('/api/reports/donor-trends');
 
   el.innerHTML = `
+    <!-- H-05: Period filter -->
+    <div class="action-bar" style="margin-bottom:16px;">
+      <span class="dash-section-title">Analytics &amp; Reports</span>
+      <div class="btn-group">
+        <button class="btn-dash ${reportPeriod === 'all' ? 'btn-dash-primary' : 'btn-dash-outline'}" onclick="setReportPeriod('all')">All Time</button>
+        <button class="btn-dash ${reportPeriod === 'year' ? 'btn-dash-primary' : 'btn-dash-outline'}" onclick="setReportPeriod('year')">Year</button>
+        <button class="btn-dash ${reportPeriod === 'month' ? 'btn-dash-primary' : 'btn-dash-outline'}" onclick="setReportPeriod('month')">Month</button>
+        <button class="btn-dash ${reportPeriod === 'week' ? 'btn-dash-primary' : 'btn-dash-outline'}" onclick="setReportPeriod('week')">Week</button>
+      </div>
+    </div>
+
     <div class="stats-grid">
       ${statCard('blue', ICONS.donors, stats.donors.total, 'Total Donors')}
-      ${statCard('green', ICONS.milk, stats.donations.total_volume_ml + ' ml', 'Total Volume Collected')}
+      ${statCard('green', ICONS.milk, (Number(stats.donations.total_volume_ml) || 0).toFixed(1) + ' ml', 'Total Volume Collected')}
       ${statCard('teal', ICONS.inventory, stats.batches.dispensed, 'Batches Dispensed')}
       ${statCard('red', ICONS.recall, stats.recalls.total, 'Recall Events')}
+    </div>
+
+    <!-- L-07: Chart.js charts -->
+    <div class="dash-grid-2" style="margin-bottom:20px;">
+      <div class="dash-card">
+        <div class="dash-card-header"><span class="dash-card-title">Batch Status Breakdown</span></div>
+        <div class="dash-card-body" style="display:flex;align-items:center;justify-content:center;">
+          <canvas id="chart-batch" width="260" height="260" style="max-width:260px;"></canvas>
+        </div>
+      </div>
+      <div class="dash-card">
+        <div class="dash-card-header"><span class="dash-card-title">Milk Collected (Last 7 Days)</span></div>
+        <div class="dash-card-body">
+          <canvas id="chart-collections" height="200"></canvas>
+        </div>
+      </div>
     </div>
 
     <div class="dash-grid-2">
@@ -685,33 +789,32 @@ async function renderReports(el) {
       <div class="dash-card">
         <div class="dash-card-header"><span class="dash-card-title">Key Metrics</span></div>
         <div class="dash-card-body">
-          <div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--clr-bg);">
-            <span>Approved Donors</span><strong>${stats.donors.approved}</strong>
-          </div>
-          <div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--clr-bg);">
-            <span>Active Requests</span><strong>${stats.requests.pending}</strong>
-          </div>
-          <div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--clr-bg);">
-            <span>Total Recipients</span><strong>${stats.recipients.total}</strong>
-          </div>
-          <div style="display:flex;justify-content:space-between;padding:8px 0;">
-            <span>Scheduled Appointments</span><strong>${stats.appointments.scheduled}</strong>
-          </div>
+          <div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--clr-bg);"><span>Approved Donors</span><strong>${stats.donors.approved}</strong></div>
+          <div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--clr-bg);"><span>Active Requests</span><strong>${stats.requests.pending}</strong></div>
+          <div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--clr-bg);"><span>Total Recipients</span><strong>${stats.recipients.total}</strong></div>
+          <div style="display:flex;justify-content:space-between;padding:8px 0;"><span>Scheduled Appointments</span><strong>${stats.appointments.scheduled}</strong></div>
         </div>
       </div>
     </div>
 
+    <!-- H-06: Print / Export -->
     <div class="dash-card">
       <div class="dash-card-header">
         <span class="dash-card-title">Generate Report</span>
       </div>
       <div class="dash-card-body">
+        <p style="font-size:0.82rem;color:var(--clr-text-muted);margin-bottom:12px;">Export a formatted summary report. The printed report will include all statistics, batch breakdown, and collection data for the selected period.</p>
         <div class="btn-group">
-          <button class="btn-dash btn-dash-primary" onclick="window.print()">🖨️ Print Report</button>
-          <button class="btn-dash btn-dash-outline" onclick="toast('Report export coming soon', 'info')">📄 Export PDF</button>
+          <button class="btn-dash btn-dash-primary" onclick="printFormattedReport()">
+            <svg viewBox="0 0 24 24" width="16" height="16" fill="#fff"><path d="M19 8H5c-1.66 0-3 1.34-3 3v6h4v4h12v-4h4v-6c0-1.66-1.34-3-3-3zm-3 11H8v-5h8v5zm3-7c-.55 0-1-.45-1-1s.45-1 1-1 1 .45 1 1-.45 1-1 1zm-1-9H6v4h12V3z"/></svg>
+            Print Report
+          </button>
         </div>
       </div>
     </div>`;
+
+  // Render Chart.js charts after DOM update
+  setTimeout(() => renderReportCharts(batchResults, collections), 50);
 }
 
 // ── AUDIT PAGE ───────────────────────────────────────────
@@ -990,15 +1093,51 @@ window.submitDonation = async function() {
 window.viewQR = async function(donationId) {
   const data = await API.get(`/api/milk/qr/${donationId}`);
   if (data.qr) {
+    // H-07: QR Code label print interface
     openModal(`QR Code: ${donationId}`, `
       <div class="qr-display">
         <img src="${data.qr}" alt="QR Code for ${donationId}" />
         <p><strong>${data.data.donor}</strong></p>
         <p>Date: ${data.data.date} | Volume: ${data.data.volume}</p>
-        <p style="font-size:0.72rem;color:var(--clr-text-muted);margin-top:8px;">Scan with QR reader to verify</p>
+        <p style="font-size:0.72rem;color:var(--clr-text-muted);margin-top:4px;">Scan with QR reader to verify</p>
+      </div>
+      <div class="modal-actions">
+        <button class="btn-dash btn-dash-outline" onclick="closeModal()">Close</button>
+        <button class="btn-dash btn-dash-primary" onclick="printQRLabel('${donationId}', '${data.data.donor.replace(/'/g, '&apos;')}', '${data.data.date}', '${data.data.volume}', this.closest('.modal-content').querySelector('.qr-display img').src)">
+          <svg viewBox="0 0 24 24" width="14" height="14" fill="#fff"><path d="M19 8H5c-1.66 0-3 1.34-3 3v6h4v4h12v-4h4v-6c0-1.66-1.34-3-3-3zm-3 11H8v-5h8v5zm3-7c-.55 0-1-.45-1-1s.45-1 1-1 1 .45 1 1-.45 1-1 1zm-1-9H6v4h12V3z"/></svg>
+          Print Label
+        </button>
       </div>
     `);
   }
+};
+
+// H-07: Print label for milk container
+window.printQRLabel = function(id, donor, date, volume, qrSrc) {
+  const win = window.open('', '_blank', 'width=400,height=500');
+  win.document.write(`<!DOCTYPE html><html><head><title>Milk Label — ${id}</title>
+    <style>body{font-family:Arial,sans-serif;margin:0;padding:24px;text-align:center;}
+    .label-box{border:2px solid #1a6fa8;border-radius:8px;padding:20px;display:inline-block;min-width:280px;}
+    h2{color:#1a6fa8;font-size:1rem;margin:0 0 12px;}
+    img{width:180px;height:180px;}
+    .field{font-size:0.82rem;margin:4px 0;text-align:left;}
+    .field strong{color:#1a1a2e;}
+    .barcode{font-size:0.72rem;color:#666;margin-top:8px;border-top:1px dashed #ccc;padding-top:8px;}
+    @media print{body{margin:0;}}</style>
+  </head><body>
+    <div class="label-box">
+      <h2>MAKATI HUMAN MILK BANK</h2>
+      <img src="${qrSrc}" alt="QR" />
+      <div class="field"><strong>Donation ID:</strong> ${id}</div>
+      <div class="field"><strong>Donor:</strong> ${donor}</div>
+      <div class="field"><strong>Date:</strong> ${date}</div>
+      <div class="field"><strong>Volume:</strong> ${volume}</div>
+      <div class="field" style="color:#dc2626;font-weight:700;">STORE AT -20°C</div>
+      <div class="barcode">HMBMS — DOH PHM Compliant — ${id}</div>
+    </div>
+    <script>window.onload=function(){window.print();}<\/script>
+  </body></html>`);
+  win.document.close();
 };
 
 // ── Storage Logging ──────────────────────────────────────
@@ -1075,16 +1214,18 @@ window.openCreateBatchModal = async function() {
     <div class="form-group">
       <label>Select Donations</label>
       ${stored.length === 0 ? '<p>No stored donations available.</p>' :
-        stored.map(d => `<label style="display:flex;gap:8px;align-items:center;padding:6px 0;font-size:0.85rem;">
-          <input type="checkbox" class="batch-donation-cb" value="${d.donation_id}" />
-          ${d.donation_id} — ${d.first_name} ${d.last_name} (${d.volume_ml}ml)
-        </label>`).join('')}
+        stored.map(d => `<div style="display:flex;gap:10px;align-items:center;padding:6px 0;font-size:0.85rem;border-bottom:1px solid var(--clr-bg);">
+          <input type="checkbox" class="batch-donation-cb" id="cb-${d.donation_id}" value="${d.donation_id}" style="width:16px;height:16px;flex-shrink:0;" />
+          <label for="cb-${d.donation_id}" style="margin:0;cursor:pointer;flex:1;">${d.donation_id} — ${d.first_name} ${d.last_name} (${d.volume_ml}ml)</label>
+        </div>`).join('')}
     </div>
-    <div class="form-group">
-      <label><input type="checkbox" id="batch-thaw" /> Thawed for under 24 hours ✅</label>
+    <div class="form-group" style="display:flex;gap:10px;align-items:center;padding:8px 0;">
+      <input type="checkbox" id="batch-thaw" style="width:16px;height:16px;flex-shrink:0;" />
+      <label for="batch-thaw" style="margin:0;">Milk thawed for under 24 hours</label>
     </div>
-    <div class="form-group">
-      <label><input type="checkbox" id="batch-laminar" /> Pooled under laminar flow hood ✅</label>
+    <div class="form-group" style="display:flex;gap:10px;align-items:center;padding:8px 0;">
+      <input type="checkbox" id="batch-laminar" style="width:16px;height:16px;flex-shrink:0;" />
+      <label for="batch-laminar" style="margin:0;">Pooled under laminar flow hood</label>
     </div>
     <div class="modal-actions">
       <button class="btn-dash btn-dash-outline" onclick="closeModal()">Cancel</button>
@@ -1264,11 +1405,21 @@ window.approveRequest = async function(reqId) {
 };
 
 window.confirmPayment = async function(reqId) {
-  // C-07: Payment amount with proper number constraints
+  // H-11: Auto-calculate fee from volume (SRS §3.5: ₱50 per 100ml standard MHMB rate)
+  let autoFee = '';
+  try {
+    const requests = await API.get('/api/requests');
+    const thisReq = requests.find(r => r.request_id === reqId);
+    if (thisReq && thisReq.requested_volume_ml) {
+      autoFee = (Math.ceil(thisReq.requested_volume_ml / 100) * 50).toFixed(2);
+    }
+  } catch (e) {}
+
   openModal('Confirm Payment', `
+    <p style="font-size:0.82rem;color:var(--clr-text-muted);margin-bottom:12px;">Standard rate: ₱50.00 per 100 ml. Amount pre-filled based on requested volume.</p>
     <div class="form-group">
       <label>Payment Amount (₱)</label>
-      <input type="number" id="pay-amount" class="dash-input" placeholder="Enter amount" min="0" step="0.01" />
+      <input type="number" id="pay-amount" class="dash-input" placeholder="Enter amount" min="0" step="0.01" value="${autoFee}" />
     </div>
     <div class="modal-actions">
       <button class="btn-dash btn-dash-outline" onclick="closeModal()">Cancel</button>
