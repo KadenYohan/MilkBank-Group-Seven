@@ -7,6 +7,7 @@ require('dotenv').config();
 const express = require('express');
 const session = require('express-session');
 const path = require('path');
+const fs = require('fs');
 const cors = require('cors');
 const db = require('./db');
 const { initDatabase } = require('./database');
@@ -144,5 +145,58 @@ async function startServer() {
 }
 
 startServer();
+
+// ── Automated Daily Database Backup (§3.6 SRS) ────────────────
+// Runs every 24 hours — exports all critical tables to JSON
+const BACKUP_DIR = path.join(__dirname, 'backups');
+if (!fs.existsSync(BACKUP_DIR)) fs.mkdirSync(BACKUP_DIR, { recursive: true });
+
+async function runDailyBackup() {
+  const timestamp = new Date().toISOString().replace(/[:.]/g, '-').slice(0, 19);
+  const filename = path.join(BACKUP_DIR, `hmbms-backup-${timestamp}.json`);
+  console.log(`[Backup] Starting daily backup → ${filename}`);
+
+  try {
+    const tables = [
+      'users', 'donors', 'recipients', 'milk_donations',
+      'pasteurization_batches', 'batch_donations', 'milk_requests',
+      'distributions', 'chain_of_custody', 'audit_trail',
+      'batch_recalls', 'notifications', 'appointments'
+    ];
+
+    const backup = { timestamp, tables: {} };
+    for (const table of tables) {
+      try {
+        const result = await db.query(`SELECT * FROM ${table} ORDER BY 1`);
+        backup.tables[table] = result.rows;
+      } catch (err) {
+        backup.tables[table] = { error: err.message };
+      }
+    }
+
+    fs.writeFileSync(filename, JSON.stringify(backup, null, 2));
+    console.log(`[Backup] ✅ Backup completed: ${filename} (${Object.keys(backup.tables).length} tables)`);
+
+    // Keep only last 7 backups to save disk space
+    const files = fs.readdirSync(BACKUP_DIR)
+      .filter(f => f.startsWith('hmbms-backup-'))
+      .sort();
+    if (files.length > 7) {
+      const toDelete = files.slice(0, files.length - 7);
+      toDelete.forEach(f => {
+        fs.unlinkSync(path.join(BACKUP_DIR, f));
+        console.log(`[Backup] Removed old backup: ${f}`);
+      });
+    }
+  } catch (err) {
+    console.error('[Backup] ❌ Backup failed:', err.message);
+  }
+}
+
+// Run once on startup (after 30s delay to let DB stabilize), then every 24 hours
+setTimeout(() => {
+  runDailyBackup();
+  setInterval(runDailyBackup, 24 * 60 * 60 * 1000);
+}, 30000);
 
 module.exports = app;

@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Service Maintenance — HMBMS</title>
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🍼</text></svg>" />
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Inter', system-ui, sans-serif;
+      min-height: 100vh;
+      background: linear-gradient(135deg, #0d3f63 0%, #0a1628 100%);
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      color: #fff; padding: 24px; text-align: center;
+    }
+    .icon {
+      width: 80px; height: 80px; border-radius: 20px;
+      background: rgba(255,255,255,0.1);
+      border: 1px solid rgba(255,255,255,0.2);
+      display: flex; align-items: center; justify-content: center;
+      margin: 0 auto 28px; font-size: 2.5rem;
+    }
+    h1 { font-size: 1.8rem; font-weight: 800; margin-bottom: 12px; letter-spacing: -0.02em; }
+    p { font-size: 0.95rem; color: rgba(255,255,255,0.65); line-height: 1.7; max-width: 420px; margin-bottom: 32px; }
+    .status-box {
+      display: flex; align-items: center; gap: 10px;
+      background: rgba(255,255,255,0.08);
+      border: 1px solid rgba(255,255,255,0.15);
+      border-radius: 12px; padding: 14px 20px;
+      font-size: 0.85rem; margin-bottom: 24px;
+    }
+    .status-dot {
+      width: 8px; height: 8px; border-radius: 50%;
+      background: #f59e0b;
+      animation: blink 1.5s infinite;
+      flex-shrink: 0;
+    }
+    @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0.2; } }
+    .btn {
+      padding: 12px 28px; border-radius: 10px;
+      background: rgba(255,255,255,0.15);
+      border: 1px solid rgba(255,255,255,0.3);
+      color: #fff; font-size: 0.88rem; font-weight: 600;
+      cursor: pointer; transition: background 0.2s;
+      text-decoration: none; display: inline-block;
+    }
+    .btn:hover { background: rgba(255,255,255,0.25); }
+    .info { font-size: 0.75rem; color: rgba(255,255,255,0.4); margin-top: 20px; }
+  </style>
+</head>
+<body>
+  <div class="icon">🔧</div>
+  <h1>Service Maintenance</h1>
+  <p>
+    The HMBMS system is currently unavailable. This may be due to a lost internet connection
+    or scheduled database maintenance. Please check your network and try again.
+  </p>
+  <div class="status-box">
+    <div class="status-dot"></div>
+    <span>Waiting for connection to be restored...</span>
+  </div>
+  <button class="btn" onclick="tryReconnect()">🔄 Try Again</button>
+  <p class="info">
+    Makati Human Milk Bank — HMBMS v1.1<br/>
+    If this issue persists, contact your system administrator.
+  </p>
+
+  <script>
+    function tryReconnect() {
+      if (navigator.onLine) {
+        window.location.href = '/';
+      } else {
+        alert('Still offline. Please check your internet connection.');
+      }
+    }
+
+    // Auto-redirect when connection is restored
+    window.addEventListener('online', () => {
+      setTimeout(() => { window.location.href = '/'; }, 1500);
+    });
+
+    // Check connectivity on load
+    if (navigator.onLine) {
+      setTimeout(() => { window.location.href = '/'; }, 500);
+    }
+  </script>
+</body>
+</html>

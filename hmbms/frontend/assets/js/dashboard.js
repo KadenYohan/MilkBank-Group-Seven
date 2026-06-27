@@ -137,6 +137,44 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   // Poll notifications every 30 seconds
   setInterval(loadNotifications, 30000);
+
+  // ── Global Input Masks (TC-HMB-09, §4.4) ──────────────────
+  // Prevents letters/negatives on all numeric fields (event delegation
+  // covers dynamically rendered forms inside the SPA dashboard)
+  document.addEventListener('input', (e) => {
+    const el = e.target;
+    if (!el.tagName || el.tagName !== 'INPUT') return;
+
+    // Volume / weight fields → positive decimals only
+    if (/volume|_ml|weight/i.test(el.id || '')) {
+      el.value = el.value.replace(/[^0-9.]/g, '');
+      const parts = el.value.split('.');
+      if (parts.length > 2) el.value = parts[0] + '.' + parts.slice(1).join('');
+      if (el.value !== '' && parseFloat(el.value) < 0) el.value = '';
+    }
+
+    // Duration / minutes → positive integers only
+    if (/duration|minutes/i.test(el.id || '')) {
+      el.value = el.value.replace(/[^0-9]/g, '');
+    }
+
+    // Fee / payment / amount → positive decimals only
+    if (/fee|payment|amount/i.test(el.id || '')) {
+      el.value = el.value.replace(/[^0-9.]/g, '');
+      const parts = el.value.split('.');
+      if (parts.length > 2) el.value = parts[0] + '.' + parts.slice(1).join('');
+    }
+
+    // Phone fields → digits only, max 11
+    if (el.type === 'tel' || /phone/i.test(el.id || '')) {
+      el.value = el.value.replace(/[^0-9]/g, '').slice(0, 11);
+    }
+
+    // Bacterial count → allow e.g. "<10 CFU/ml"
+    if (/bacterial/i.test(el.id || '')) {
+      el.value = el.value.replace(/[^0-9a-zA-Z<>\s\/\.]/g, '');
+    }
+  });
 });
 
 function initUI() {
