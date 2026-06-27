@@ -76,14 +76,14 @@ router.post('/submit', requireAuth, requireRole('recipient'), upload.single('pre
 });
 
 // GET /api/requests/track/:code — Track order by tracking code
+// Bug #1 fix: This endpoint is public (no auth) so we strip PII
+// to comply with Data Privacy Act (§4.1). Only status info is returned.
 router.get('/track/:code', async (req, res) => {
   try {
     const requestRes = await db.query(`
       SELECT mr.request_id, mr.tracking_code, mr.requested_volume_ml, mr.request_status,
-             mr.created_at, mr.updated_at, mr.dispensed_at,
-             r.infant_name, r.hospital_name, r.priority_status
+             mr.created_at, mr.updated_at, mr.dispensed_at
       FROM milk_requests mr
-      JOIN recipients r ON mr.recipient_id = r.recipient_id
       WHERE mr.tracking_code = $1
     `, [req.params.code]);
     const request = requestRes.rows[0];
@@ -99,7 +99,14 @@ router.get('/track/:code', async (req, res) => {
       });
     }
 
-    res.json(request);
+    // Return only non-PII fields for public tracking
+    res.json({
+      tracking_code: request.tracking_code,
+      requested_volume_ml: request.requested_volume_ml,
+      request_status: request.request_status,
+      created_at: request.created_at,
+      updated_at: request.updated_at
+    });
   } catch (err) {
     console.error('Error tracking request:', err);
     res.status(500).json({ error: 'Internal server error' });

@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Request Milk — HMBMS</title>
+  <link rel="stylesheet" href="assets/css/style.css" />
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🍼</text></svg>" />
+</head>
+<body>
+
+  <!-- ─── NAVBAR (Simplified) ─────────────────────────────────── -->
+  <nav class="navbar" id="main-navbar">
+    <div class="container nav-inner">
+      <a href="index.html" class="nav-brand">
+        <div class="nav-logo-icon">
+          <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" fill="#fff"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 14H9V8h2v8zm4 0h-2V8h2v8z"/></svg>
+        </div>
+        <div class="nav-brand-text">
+          <span class="nav-system-name">HMBMS</span>
+          <span class="nav-org-name">Makati Human Milk Bank</span>
+        </div>
+      </a>
+      <ul class="nav-links">
+        <li><a href="index.html">Home</a></li>
+      </ul>
+    </div>
+  </nav>
+
+  <!-- ─── PAGE HEADER ─────────────────────────────────────────── -->
+  <header class="page-header" style="background: linear-gradient(135deg, var(--clr-hero-bg) 0%, #114d78 100%);">
+    <div class="container">
+      <h1>Recipient Request</h1>
+      <p>Submit a request for safe, pasteurized donor human milk. A valid doctor's prescription is required.</p>
+    </div>
+  </header>
+
+  <!-- ─── INTAKE FORM ─────────────────────────────────────────── -->
+  <main class="container page-content">
+    <div class="form-card">
+      <h2 class="form-section-title">Patient Intake Form</h2>
+      <p class="form-section-desc">Please complete all required fields for the infant requiring donor milk.</p>
+      
+      <form id="recipient-form">
+        <!-- Patient Info -->
+        <div class="form-group">
+          <label class="form-label">Infant/Patient Name</label>
+          <input type="text" class="form-control" required />
+        </div>
+        <div class="form-group">
+          <label class="form-label">Guardian Name</label>
+          <input type="text" class="form-control" id="guardian-name" required />
+        </div>
+        <div class="form-group">
+          <label class="form-label">Guardian Contact Number <span style="color: var(--clr-primary); font-size: 0.8rem;">(for SMS notifications)</span></label>
+          <input type="tel" class="form-control" id="guardian-contact" placeholder="09XXXXXXXXX" maxlength="11" pattern="09[0-9]{9}" required />
+          <small style="color: var(--clr-text-muted); font-size: 0.78rem; margin-top: 4px; display: block;">You will receive an SMS when your request is ready for pickup.</small>
+        </div>
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+          <div class="form-group">
+            <label class="form-label">Birth Weight (kg)</label>
+            <input type="number" step="0.01" min="0" class="form-control" id="birth-weight" required />
+          </div>
+          <div class="form-group">
+            <label class="form-label">Diagnosis / Reason</label>
+            <select class="form-control" required>
+              <option value="">Select Diagnosis...</option>
+              <option value="prematurity">Prematurity</option>
+              <option value="nicu">NICU Confinement</option>
+              <option value="maternal">Maternal Complication</option>
+              <option value="other">Other</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Medical Info -->
+        <div class="form-group">
+          <label class="form-label">Attending Physician (Doctor Name)</label>
+          <input type="text" class="form-control" required />
+        </div>
+        <div class="form-group">
+          <label class="form-label">Hospital Name</label>
+          <input type="text" class="form-control" required />
+        </div>
+
+        <!-- Volume Request & Quote Box -->
+        <div class="form-group">
+          <label class="form-label">Requested Volume (ml)</label>
+          <input type="number" id="volume-input" class="form-control" min="50" max="2000" placeholder="e.g. 500" required />
+        </div>
+
+        <!-- Interactive Quote Box -->
+        <div class="quote-box" id="quote-box" style="display: none;">
+          <div class="quote-header">Estimated Processing Fee</div>
+          <div class="quote-amount" id="quote-amount">₱0.00</div>
+          <div class="quote-desc">Subsidized rate for pasteurization and lab testing.</div>
+        </div>
+
+        <!-- Prescription Vault Dropzone -->
+        <div class="form-group" style="margin-top: 32px;">
+          <label class="form-label">Doctor's Prescription (Upload)</label>
+          <div class="file-drop-zone" id="file-drop-zone">
+            <svg viewBox="0 0 24 24" width="40" height="40" fill="var(--clr-primary)"><path d="M19.35 10.04C18.67 6.59 15.64 4 12 4 9.11 4 6.6 5.64 5.36 8.04 2.34 8.36 0 10.91 0 14c0 3.31 2.69 6 6 6h13c2.76 0 5-2.24 5-5 0-2.64-2.05-4.78-4.65-4.96zM14 13v4h-4v-4H7l5-5 5 5h-3z"/></svg>
+            <div class="drop-zone-text">Drag & drop prescription image/PDF here</div>
+            <div class="drop-zone-hint">Max file size: 5MB (JPG, PNG, PDF)</div>
+            <input type="file" id="prescription-upload" accept="image/*,application/pdf" style="display: none;" />
+            <button type="button" class="btn btn-outline-dark btn-sm" onclick="document.getElementById('prescription-upload').click()" style="margin-top: 12px;">Browse Files</button>
+            <div id="file-name-display" style="margin-top: 10px; font-weight: 600; color: var(--clr-primary);"></div>
+          </div>
+        </div>
+
+        <!-- Submit -->
+        <div class="form-actions right">
+          <button type="button" class="btn btn-primary" id="btn-submit-request">Submit Request</button>
+        </div>
+
+      </form>
+
+      <!-- Success View -->
+      <div id="request-success" style="display: none; text-align: center; padding: 40px 0;">
+        <div style="margin: 0 auto 24px; width: 64px; height: 64px; background: var(--clr-accent-light); border-radius: 50%; display: flex; align-items: center; justify-content: center;">
+          <svg viewBox="0 0 24 24" width="32" height="32" fill="var(--clr-accent)"><path d="M9 16.2L4.8 12l-1.4 1.4L9 19 21 7l-1.4-1.4L9 16.2z"/></svg>
+        </div>
+        <h2 class="form-section-title">Request Submitted</h2>
+        <p class="form-section-desc">Your tracking code is <strong>MHB-REQ-9082</strong>. You will be notified once the request is approved.</p>
+        <a href="index.html" class="btn btn-outline-dark">Return Home</a>
+      </div>
+
+    </div>
+  </main>
+
+  <script>
+    // Volume -> Quote Calculation
+    const volumeInput = document.getElementById('volume-input');
+    const quoteBox = document.getElementById('quote-box');
+    const quoteAmount = document.getElementById('quote-amount');
+
+    // Prevent non-numeric characters via regex oninput
+    volumeInput.addEventListener('input', (e) => {
+      e.target.value = e.target.value.replace(/[^0-9]/g, '');
+      const vol = parseInt(e.target.value);
+      if (vol > 0) {
+        quoteBox.style.display = 'block';
+        // Mock fee calculation: 2 pesos per ml
+        const fee = vol * 2.0; 
+        quoteAmount.textContent = '₱' + fee.toLocaleString('en-US', {minimumFractionDigits: 2});
+      } else {
+        quoteBox.style.display = 'none';
+      }
+    });
+
+    // Contact Number: only allow digits, enforce 09XXXXXXXXX format
+    const contactInput = document.getElementById('guardian-contact');
+    contactInput.addEventListener('input', (e) => {
+      e.target.value = e.target.value.replace(/[^0-9]/g, '');
+    });
+    contactInput.addEventListener('blur', (e) => {
+      const val = e.target.value;
+      if (val && (val.length !== 11 || !val.startsWith('09'))) {
+        e.target.style.borderColor = '#e74c3c';
+        e.target.title = 'Must be 11 digits starting with 09 (e.g. 09XXXXXXXXX)';
+      } else {
+        e.target.style.borderColor = '';
+        e.target.title = '';
+      }
+    });
+
+    // Prevent negative numbers on the birth weight
+    document.getElementById('birth-weight').addEventListener('input', (e) => {
+      if(e.target.value < 0) e.target.value = 0;
+    });
+
+    // Dropzone Logic
+    const dropZone = document.getElementById('file-drop-zone');
+    const fileInput = document.getElementById('prescription-upload');
+    const fileNameDisplay = document.getElementById('file-name-display');
+
+    dropZone.addEventListener('dragover', (e) => {
+      e.preventDefault();
+      dropZone.classList.add('dragover');
+    });
+
+    dropZone.addEventListener('dragleave', () => {
+      dropZone.classList.remove('dragover');
+    });
+
+    dropZone.addEventListener('drop', (e) => {
+      e.preventDefault();
+      dropZone.classList.remove('dragover');
+      if(e.dataTransfer.files.length) {
+        fileInput.files = e.dataTransfer.files;
+        updateFileName();
+      }
+    });
+
+    fileInput.addEventListener('change', updateFileName);
+
+    function updateFileName() {
+      if(fileInput.files.length > 0) {
+        fileNameDisplay.textContent = fileInput.files[0].name;
+      }
+    }
+
+    // Submit Logic
+    document.getElementById('btn-submit-request').addEventListener('click', () => {
+      document.getElementById('recipient-form').style.display = 'none';
+      document.querySelector('.form-section-title').style.display = 'none';
+      document.querySelector('.form-section-desc').style.display = 'none';
+      document.getElementById('request-success').style.display = 'block';
+    });
+  </script>
+</body>
+</html>

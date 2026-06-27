@@ -30,17 +30,8 @@ router.get('/', requireAuth, async (req, res) => {
   }
 });
 
-// PUT /api/notifications/:id/read — Mark as read
-router.put('/:id/read', requireAuth, async (req, res) => {
-  try {
-    await db.query('UPDATE notifications SET is_read = 1 WHERE notification_id = $1 AND user_id = $2', 
-      [req.params.id, req.session.user.user_id]);
-    res.json({ success: true });
-  } catch (err) {
-    console.error('Error marking notification as read:', err);
-    res.status(500).json({ error: 'Internal server error' });
-  }
-});
+// Bug #2 fix: read-all MUST be defined BEFORE /:id/read to avoid
+// Express matching "read-all" as an :id parameter.
 
 // PUT /api/notifications/read-all — Mark all as read
 router.put('/read-all', requireAuth, async (req, res) => {
@@ -49,6 +40,18 @@ router.put('/read-all', requireAuth, async (req, res) => {
     res.json({ success: true });
   } catch (err) {
     console.error('Error marking all notifications as read:', err);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+// PUT /api/notifications/:id/read — Mark as read
+router.put('/:id/read', requireAuth, async (req, res) => {
+  try {
+    await db.query('UPDATE notifications SET is_read = 1 WHERE notification_id = $1 AND user_id = $2', 
+      [req.params.id, req.session.user.user_id]);
+    res.json({ success: true });
+  } catch (err) {
+    console.error('Error marking notification as read:', err);
     res.status(500).json({ error: 'Internal server error' });
   }
 });

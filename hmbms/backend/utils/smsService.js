@@ -41,12 +41,15 @@ async function sendMilkReadySMS(phoneNumber, trackingCode, infantName) {
     message: smsMessage
   });
 
+  const startMs = Date.now();
+
   return new Promise((resolve) => {
     const url = new URL(IPROG_API_URL);
     const options = {
       hostname: url.hostname,
       path: url.pathname,
       method: 'POST',
+      timeout: 30000, // 30-second timeout (§4.6 requires delivery within 60s)
       headers: {
         'Content-Type': 'application/json',
         'Content-Length': Buffer.byteLength(payload)
@@ -57,25 +60,34 @@ async function sendMilkReadySMS(phoneNumber, trackingCode, infantName) {
       let data = '';
       res.on('data', (chunk) => { data += chunk; });
       res.on('end', () => {
+        const elapsedMs = Date.now() - startMs;
         try {
           const json = JSON.parse(data);
           if (json.status === 200) {
-            console.log(`[iProg SMS] Sent to ${phoneNumber} | message_id: ${json.message_id}`);
-            resolve({ success: true, message_id: json.message_id, to: phoneNumber, text: smsMessage });
+            console.log(`[iProg SMS] ✅ Sent to ${phoneNumber} | message_id: ${json.message_id} | ${elapsedMs}ms`);
+            resolve({ success: true, message_id: json.message_id, to: phoneNumber, text: smsMessage, elapsed_ms: elapsedMs });
           } else {
-            console.error(`[iProg SMS] Error response:`, json);
-            resolve({ success: false, error: json.message || 'Unknown error', simulated: false });
+            console.error(`[iProg SMS] Error response (${elapsedMs}ms):`, json);
+            resolve({ success: false, error: json.message || 'Unknown error', simulated: false, elapsed_ms: elapsedMs });
           }
         } catch (parseErr) {
-          console.error('[iProg SMS] Failed to parse response:', data);
-          resolve({ success: false, error: 'Invalid API response', simulated: false });
+          console.error(`[iProg SMS] Failed to parse response (${elapsedMs}ms):`, data);
+          resolve({ success: false, error: 'Invalid API response', simulated: false, elapsed_ms: elapsedMs });
         }
       });
     });
 
+    req.on('timeout', () => {
+      const elapsedMs = Date.now() - startMs;
+      console.error(`[iProg SMS] ⏱️ Request timed out after ${elapsedMs}ms`);
+      req.destroy();
+      resolve({ success: false, error: 'SMS API request timed out', simulated: false, elapsed_ms: elapsedMs });
+    });
+
     req.on('error', (err) => {
-      console.error('[iProg SMS] Network error:', err.message);
-      resolve({ success: false, error: err.message, simulated: false });
+      const elapsedMs = Date.now() - startMs;
+      console.error(`[iProg SMS] Network error (${elapsedMs}ms):`, err.message);
+      resolve({ success: false, error: err.message, simulated: false, elapsed_ms: elapsedMs });
     });
 
     req.write(payload);

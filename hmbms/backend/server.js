@@ -22,7 +22,10 @@ app.set('trust proxy', 1);
 global.db = db;
 
 // ── Middleware ─────────────────────────────────────────────
-app.use(cors());
+app.use(cors({
+  origin: process.env.CORS_ORIGIN || true,
+  credentials: true
+}));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
@@ -35,7 +38,7 @@ app.use(session({
     maxAge: 24 * 60 * 60 * 1000, // 24 hours
     httpOnly: true,
     sameSite: 'lax',
-    secure: false // Set to false to support both HTTP and HTTPS on Render/local
+    secure: process.env.NODE_ENV === 'production'
   }
 }));
 
@@ -157,17 +160,19 @@ async function runDailyBackup() {
   console.log(`[Backup] Starting daily backup → ${filename}`);
 
   try {
-    const tables = [
+    // Allowlist of valid table names (prevents any injection risk)
+    const ALLOWED_TABLES = new Set([
       'users', 'donors', 'recipients', 'milk_donations',
       'pasteurization_batches', 'batch_donations', 'milk_requests',
       'distributions', 'chain_of_custody', 'audit_trail',
       'batch_recalls', 'notifications', 'appointments'
-    ];
+    ]);
 
     const backup = { timestamp, tables: {} };
-    for (const table of tables) {
+    for (const table of ALLOWED_TABLES) {
       try {
-        const result = await db.query(`SELECT * FROM ${table} ORDER BY 1`);
+        // Table name validated against allowlist above — safe to interpolate
+        const result = await db.query(`SELECT * FROM "${table}" ORDER BY 1`);
         backup.tables[table] = result.rows;
       } catch (err) {
         backup.tables[table] = { error: err.message };
