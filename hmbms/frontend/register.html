@@ -172,6 +172,16 @@
   </footer>
 
   <script>
+    // Auto-select role from URL param (e.g. ?role=recipient from "Request Milk" button)
+    window.addEventListener('DOMContentLoaded', () => {
+      const params = new URLSearchParams(window.location.search);
+      const roleParam = params.get('role');
+      if (roleParam === 'recipient') {
+        document.getElementById('reg-role').value = 'recipient';
+      }
+      toggleRoleFields(); // Always initialize fields correctly on load
+    });
+
     function toggleRoleFields() {
       const role = document.getElementById('reg-role').value;
       const donorFields = document.getElementById('donor-fields');
