@@ -331,13 +331,24 @@ async function loadNotifications() {
     if (data.notifications.length === 0) {
       list.innerHTML = '<p class="notif-empty">No notifications</p>';
     } else {
+      // Map notification type to the page to navigate to
+      const notifPageMap = {
+        'MILK_READY': 'requests',
+        'ORDER_UPDATE': 'requests',
+        'BATCH_RECALL': currentUser && currentUser.role === 'admin' ? 'recall' : 'batches',
+        'APPOINTMENT': 'appointments'
+      };
+
       list.innerHTML = data.notifications.slice(0, 20).map(n => `
-        <div class="notif-item ${n.is_read ? '' : 'unread'}" onclick="markNotifRead('${n.notification_id}')">
+        <div class="notif-item ${n.is_read ? '' : 'unread'}" onclick="handleNotifClick('${n.notification_id}', '${n.type}')">
           <div class="notif-item-title">${escHtml(n.title)}</div>
           <div class="notif-item-msg">${escHtml(n.message)}</div>
           <div class="notif-item-time">${formatDate(n.created_at)}</div>
         </div>
       `).join('');
+
+      // Store the map globally for use in the click handler
+      window.__notifPageMap = notifPageMap;
     }
   } catch (e) { /* silent */ }
 }
@@ -347,6 +358,17 @@ async function markNotifRead(id) {
   loadNotifications();
 }
 
+window.handleNotifClick = async function(id, type) {
+  await API.put(`/api/notifications/${id}/read`);
+  // Close notification panel
+  document.getElementById('notif-panel').style.display = 'none';
+  // Navigate to relevant page
+  const map = window.__notifPageMap || {};
+  const targetPage = map[type];
+  if (targetPage) loadPage(targetPage);
+  else loadNotifications(); // just refresh badge if no target
+};
+
 // ── OVERVIEW PAGE ────────────────────────────────────────
 async function renderOverview(el) {
   const stats = await API.get('/api/reports/dashboard');
@@ -355,11 +377,14 @@ async function renderOverview(el) {
   let html = '<div class="stats-grid">';
 
   if (role === 'admin' || role === 'nurse' || role === 'medtech') {
+    const isAdmin = role === 'admin';
+    // Admin gets 6 cards — use stats-grid-6 for balanced 3x2 layout
+    if (isAdmin) html = '<div class="stats-grid stats-grid-6">';
     html += statCard('blue', ICONS.donors, stats.donors.total, 'Total Donors');
     html += statCard('green', ICONS.milk, stats.donations.total, 'Total Donations');
     html += statCard('teal', ICONS.inventory, stats.batches.ready, 'Ready Batches');
     html += statCard('orange', ICONS.requests, stats.requests.pending, 'Pending Requests');
-    if (role === 'admin') {
+    if (isAdmin) {
       html += statCard('red', ICONS.recall, stats.recalls.total, 'Recall Events');
       html += statCard('purple', ICONS.calendar, stats.appointments.scheduled, 'Scheduled Appts');
     }
@@ -1443,21 +1468,11 @@ window.approveRequest = async function(reqId) {
 };
 
 window.confirmPayment = async function(reqId) {
-  // H-11: Auto-calculate fee from volume (SRS §3.5: ₱50 per 100ml standard MHMB rate)
-  let autoFee = '';
-  try {
-    const requests = await API.get('/api/requests');
-    const thisReq = requests.find(r => r.request_id === reqId);
-    if (thisReq && thisReq.requested_volume_ml) {
-      autoFee = (Math.ceil(thisReq.requested_volume_ml / 100) * 50).toFixed(2);
-    }
-  } catch (e) {}
-
   openModal('Confirm Payment', `
-    <p style="font-size:0.82rem;color:var(--clr-text-muted);margin-bottom:12px;">Standard rate: ₱50.00 per 100 ml. Amount pre-filled based on requested volume.</p>
+    <p style="font-size:0.82rem;color:var(--clr-text-muted);margin-bottom:12px;">Recipients pay a <strong>minimal operational fee</strong> to sustain milk bank operations. Enter the agreed amount, or leave as 0 for fee-exempt cases (e.g., indigent patients).</p>
     <div class="form-group">
       <label>Payment Amount (₱)</label>
-      <input type="number" id="pay-amount" class="dash-input" placeholder="Enter amount" min="0" step="0.01" value="${autoFee}" />
+      <input type="number" id="pay-amount" class="dash-input" placeholder="Enter amount (e.g., 50)" min="0" step="0.01" value="" />
     </div>
     <div class="modal-actions">
       <button class="btn-dash btn-dash-outline" onclick="closeModal()">Cancel</button>
@@ -1751,3 +1766,79 @@ function toast(message, type = 'info') {
   container.appendChild(toastEl);
   setTimeout(() => toastEl.remove(), 6000);
 }
+
+// ── Print Formatted Report ────────────────────────────────
+window.printFormattedReport = async function() {
+  let stats, batchResults;
+  try {
+    stats = await API.get('/api/reports/dashboard');
+    batchResults = await API.get('/api/reports/batch-results');
+  } catch (e) {
+    toast('Could not load report data. Make sure you are connected.', 'error');
+    return;
+  }
+
+  const now = new Date().toLocaleString('en-PH', {
+    month: 'long', day: 'numeric', year: 'numeric',
+    hour: '2-digit', minute: '2-digit'
+  });
+
+  const batchRows = (batchResults || []).map(r =>
+    `<tr><td>${r.batch_status}</td><td style="text-align:center">${r.count}</td></tr>`
+  ).join('');
+
+  const html = `<!DOCTYPE html><html><head>
+  <title>HMBMS Report — ${now}</title>
+  <style>
+    body { font-family: Arial, sans-serif; margin: 40px; color: #1a1a2e; }
+    h1 { color: #1a6fa8; font-size: 1.3rem; margin-bottom: 4px; }
+    .subtitle { font-size: 0.85rem; color: #666; margin-bottom: 24px; }
+    .section { margin-bottom: 24px; }
+    h2 { font-size: 1rem; border-bottom: 2px solid #1a6fa8; padding-bottom: 4px; margin-bottom: 12px; }
+    .stats { display: flex; flex-wrap: wrap; gap: 12px; margin-bottom: 8px; }
+    .stat-box { border: 1px solid #ddd; border-radius: 6px; padding: 12px 18px; min-width: 140px; }
+    .stat-num { font-size: 1.6rem; font-weight: 700; color: #1a6fa8; }
+    .stat-lbl { font-size: 0.78rem; color: #666; }
+    table { width: 100%; border-collapse: collapse; font-size: 0.88rem; }
+    th { background: #f0f6fb; text-align: left; padding: 8px; border: 1px solid #ddd; }
+    td { padding: 8px; border: 1px solid #ddd; }
+    .footer { margin-top: 40px; font-size: 0.72rem; color: #999; border-top: 1px solid #eee; padding-top: 10px; }
+    @media print { body { margin: 20px; } }
+  </style>
+</head><body>
+  <h1>Makati Human Milk Bank — Operations Report</h1>
+  <div class="subtitle">Generated: ${now} &nbsp;|&nbsp; System: HMBMS v1.0</div>
+
+  <div class="section">
+    <h2>Key Statistics</h2>
+    <div class="stats">
+      <div class="stat-box"><div class="stat-num">${stats.donors.total}</div><div class="stat-lbl">Total Donors</div></div>
+      <div class="stat-box"><div class="stat-num">${stats.donors.approved}</div><div class="stat-lbl">Approved Donors</div></div>
+      <div class="stat-box"><div class="stat-num">${Number(stats.donations.total_volume_ml || 0).toFixed(1)} ml</div><div class="stat-lbl">Volume Collected</div></div>
+      <div class="stat-box"><div class="stat-num">${stats.batches.ready}</div><div class="stat-lbl">Ready Batches</div></div>
+      <div class="stat-box"><div class="stat-num">${stats.batches.dispensed}</div><div class="stat-lbl">Batches Dispensed</div></div>
+      <div class="stat-box"><div class="stat-num">${stats.requests.pending}</div><div class="stat-lbl">Pending Requests</div></div>
+      <div class="stat-box"><div class="stat-num">${stats.recipients.total}</div><div class="stat-lbl">Total Recipients</div></div>
+      <div class="stat-box"><div class="stat-num">${stats.recalls.total}</div><div class="stat-lbl">Recall Events</div></div>
+      <div class="stat-box"><div class="stat-num">${stats.appointments.scheduled}</div><div class="stat-lbl">Scheduled Appts</div></div>
+    </div>
+  </div>
+
+  <div class="section">
+    <h2>Batch Status Breakdown</h2>
+    <table><thead><tr><th>Batch Status</th><th>Count</th></tr></thead>
+    <tbody>${batchRows || '<tr><td colspan="2">No batch data yet</td></tr>'}</tbody></table>
+  </div>
+
+  <div class="footer">
+    This report was generated by the HMBMS for the Makati Human Milk Bank.
+    DOH Philippine Human Milk Banking Guidelines compliant.
+  </div>
+<script>window.onload = function() { window.print(); }<\/script>
+</body></html>`;
+
+  const win = window.open('', '_blank', 'width=900,height=700');
+  if (!win) { toast('Please allow popups to print the report.', 'warning'); return; }
+  win.document.write(html);
+  win.document.close();
+};

@@ -477,6 +477,11 @@
   margin-bottom: 28px;
 }
 
+/* Admin 6-card grid — prevents orphaned last card */
+.stats-grid-6 {
+  grid-template-columns: repeat(3, 1fr);
+}
+
 .stat-card {
   background: #fff;
   border: 1px solid var(--clr-border);

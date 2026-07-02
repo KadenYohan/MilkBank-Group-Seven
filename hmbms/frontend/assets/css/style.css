@@ -601,8 +601,9 @@ ul {
 }
 
 .hero-float-badge.badge-safe {
-  top: -20px;
-  right: -10px;
+  top: auto;
+  bottom: -18px;
+  right: 20px;
   animation-delay: 0s;
 }
 
@@ -611,8 +612,8 @@ ul {
 }
 
 .hero-float-badge.badge-cold {
-  bottom: 20px;
-  left: -20px;
+  bottom: -18px;
+  left: 20px;
   animation-delay: 1.5s;
 }
 
@@ -1462,8 +1463,8 @@ body.login-page {
     width: 100%;
   }
 
-  .hero-float-badge.badge-safe { top: -16px; right: 10px; }
-  .hero-float-badge.badge-cold { bottom: 10px; left: 10px; }
+  .hero-float-badge.badge-safe { bottom: -14px; right: 10px; top: auto; }
+  .hero-float-badge.badge-cold { bottom: -14px; left: 10px; }
 
   .about-grid {
     grid-template-columns: 1fr;
