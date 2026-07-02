@@ -1,4 +1,4 @@
-# HMBMS Test Plan — Stage 10
+# MHMBS Test Plan — Stage 10
 
 ## Test Environment
 

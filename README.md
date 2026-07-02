@@ -1,6 +1,6 @@
-# Human Milk Bank Management System (HMBMS)
+# Human Milk Bank Management System (MHMBS)
 
-The HMBMS is a web-based application designed to automate the manual logbook processes of the **Makati Human Milk Bank (MHMB)**. The system manages the entire lifecycle of donated human milk — from donor screening and collection, to pasteurization logging, laboratory testing, and prescription-based dispensing.
+The MHMBS is a web-based application designed to automate the manual logbook processes of the **Makati Human Milk Bank (MHMB)**. The system manages the entire lifecycle of donated human milk — from donor screening and collection, to pasteurization logging, laboratory testing, and prescription-based dispensing.
 
 ## 🌐 Live Application Link
 Access the live deployment here:  

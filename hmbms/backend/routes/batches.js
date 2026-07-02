@@ -1,5 +1,5 @@
 // ============================================================
-// HMBMS — Pasteurization Batch Routes (Stage 5 - PostgreSQL)
+// MHMBS — Pasteurization Batch Routes (Stage 5 - PostgreSQL)
 // Batch management, lab tests, safety validation
 // ============================================================
 

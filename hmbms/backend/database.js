@@ -1,5 +1,5 @@
 // ============================================================
-// HMBMS — Database Schema & Initialization (PostgreSQL)
+// MHMBS — Database Schema & Initialization (PostgreSQL)
 // Schema mirrors original structure for production deployment
 // ============================================================
 

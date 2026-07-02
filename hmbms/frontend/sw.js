@@ -1,5 +1,5 @@
 // ============================================================
-// HMBMS — Service Worker (Offline Mode Support)
+// MHMBS — Service Worker (Offline Mode Support)
 // NFR-04: Offline support for remote areas
 // §4.6: "Service Maintenance" notice on connection loss
 // ============================================================

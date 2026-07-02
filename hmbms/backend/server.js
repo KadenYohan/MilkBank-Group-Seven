@@ -1,5 +1,5 @@
 // ============================================================
-// HMBMS — Main Server (Express - PostgreSQL)
+// MHMBS — Main Server (Express - PostgreSQL)
 // Human Milk Bank Management System
 // ============================================================
 
@@ -126,7 +126,7 @@ async function startServer() {
 
     app.listen(PORT, () => {
       console.log(`\n${'═'.repeat(56)}`);
-      console.log(`  🍼 HMBMS — Human Milk Bank Management System`);
+      console.log(`  🍼 MHMBS — Human Milk Bank Management System`);
       console.log(`  🌐 Server running at http://localhost:${PORT}`);
       console.log(`  📂 Frontend: http://localhost:${PORT}/index.html`);
       console.log(`  🔐 Login:    http://localhost:${PORT}/login.html`);

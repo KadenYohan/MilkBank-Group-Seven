@@ -1,5 +1,5 @@
 /* ============================================================
-   HMBMS — Human Milk Bank Management System
+   MHMBS — Human Milk Bank Management System
    Shared Stylesheet — Stage 1
    Color Palette: Medical / Healthcare (whites, soft blues, greens)
    Font: Inter (Google Fonts)
@@ -470,6 +470,7 @@ ul {
   width: 100%;
   max-width: 400px;
   box-shadow: 0 20px 60px rgba(0,0,0,0.25);
+  position: relative;
 }
 
 .hero-card-header {
@@ -578,6 +579,7 @@ ul {
 /* Floating badges on hero */
 .hero-float-badge {
   position: absolute;
+  z-index: 10;
   background: #fff;
   border-radius: var(--radius-md);
   padding: 10px 14px;
@@ -601,9 +603,9 @@ ul {
 }
 
 .hero-float-badge.badge-safe {
-  top: auto;
-  bottom: -18px;
-  right: 20px;
+  top: -30px;
+  right: -50px;
+  bottom: auto;
   animation-delay: 0s;
 }
 
@@ -612,8 +614,8 @@ ul {
 }
 
 .hero-float-badge.badge-cold {
-  bottom: -18px;
-  left: 20px;
+  bottom: -30px;
+  left: -50px;
   animation-delay: 1.5s;
 }
 
@@ -1463,7 +1465,7 @@ body.login-page {
     width: 100%;
   }
 
-  .hero-float-badge.badge-safe { bottom: -14px; right: 10px; top: auto; }
+  .hero-float-badge.badge-safe { top: -14px; right: 10px; bottom: auto; }
   .hero-float-badge.badge-cold { bottom: -14px; left: 10px; }
 
   .about-grid {

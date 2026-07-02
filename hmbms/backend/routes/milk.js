@@ -1,5 +1,5 @@
 // ============================================================
-// HMBMS — Milk Collection Routes (Stage 4 - PostgreSQL)
+// MHMBS — Milk Collection Routes (Stage 4 - PostgreSQL)
 // Donation recording, QR code, storage logging
 // ============================================================
 
@@ -96,7 +96,7 @@ router.get('/qr/:donation_id', requireAuth, async (req, res) => {
       donor: donation.first_name + ' ' + donation.last_name,
       date: donation.donation_date,
       volume: donation.volume_ml + 'ml',
-      system: 'HMBMS-MHMB'
+      system: 'MHMBS-MHMB'
     });
 
     const qrDataUrl = await QRCode.toDataURL(qrData, { width: 300, margin: 2 });

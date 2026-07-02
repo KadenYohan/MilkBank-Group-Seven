@@ -1,5 +1,5 @@
 // ============================================================
-// HMBMS — Appointment Routes (Stage 8 - PostgreSQL)
+// MHMBS — Appointment Routes (Stage 8 - PostgreSQL)
 // Scheduling calendar for health center appointments
 // ============================================================
 

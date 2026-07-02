@@ -1,5 +1,5 @@
 // ============================================================
-// HMBMS — Authentication & RBAC Middleware (PostgreSQL)
+// MHMBS — Authentication & RBAC Middleware (PostgreSQL)
 // ============================================================
 
 const db = require('./db');

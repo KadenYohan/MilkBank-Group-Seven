@@ -1,8 +1,8 @@
-# HMBMS Build Activity Log
+# MHMBS Build Activity Log
 
 ---
 
-## Human Milk Bank Management System (HMBMS)
+## Human Milk Bank Management System (MHMBS)
 ## Complete Project Build Guide — Stage-by-Stage Prompting Guide
 
 > **How to use this guide:** Each Stage is a self-contained prompt you send to your AI coding tool. Complete one stage fully before moving to the next. Each stage builds on the previous one.
@@ -13,7 +13,7 @@
 
 | Item | Details |
 |---|---|
-| **Project Title** | Human Milk Bank Management System (HMBMS) |
+| **Project Title** | Human Milk Bank Management System (MHMBS) |
 | **Client** | Makati Human Milk Bank (MHMB) |
 | **Course** | CSS152P / Software Engineering 2 |
 | **Version** | 1.1 |
@@ -25,7 +25,7 @@
 
 ## System Summary
 
-The HMBMS replaces manual logbook processes of the Makati Human Milk Bank. It manages the full lifecycle of donated human milk:
+The MHMBS replaces manual logbook processes of the Makati Human Milk Bank. It manages the full lifecycle of donated human milk:
 
 - Donor screening and enrollment
 - Milk collection and QR code labeling
@@ -104,7 +104,7 @@ Build a clean, professional public-facing homepage for the **Makati Human Milk B
 ### Hero Section
 
 - A welcoming headline, e.g.: *"Safe Donor Milk. Stronger Babies."*
-- A short subtitle explaining the purpose: the HMBMS manages the collection, screening, processing, and distribution of donated human milk for premature and medically fragile infants in the NICU and community.
+- A short subtitle explaining the purpose: the MHMBS manages the collection, screening, processing, and distribution of donated human milk for premature and medically fragile infants in the NICU and community.
 - Two call-to-action buttons:
   - **"Become a Donor"** — leads to donor registration (placeholder link for now)
   - **"Request Milk"** — leads to recipient request form (placeholder link for now)
@@ -137,7 +137,7 @@ Display the three collection programs as cards:
 ### Contact / Footer Section
 
 - Placeholder contact info (address, phone, email)
-- Footer with: © Makati Human Milk Bank | Powered by HMBMS
+- Footer with: © Makati Human Milk Bank | Powered by MHMBS
 
 ## 1.3 Login Page — `login.html`
 
@@ -564,7 +564,7 @@ Recipients can track the progress of their order through statuses:
 **Trigger:** Facility receives notification that a previously cleared active donor has had a negative change in health status (e.g., newly contracted infection).
 
 **Flow:**
-1. Administrator logs into the HMBMS Reporting dashboard and initiates the **"Batch Recall"** command
+1. Administrator logs into the MHMBS Reporting dashboard and initiates the **"Batch Recall"** command
 2. Administrator inputs the **affected Donor ID**
 3. System traces the chain of custody and pulls up **all existing milk batches** associated with that donor
 4. Administrator selects the affected batches and confirms the recall execution
@@ -782,14 +782,14 @@ Each test case must document:
 All required sections implemented:
 
 - **Navbar** — Fixed, blur-backdrop, scrolled shadow effect, hamburger menu for mobile
-  - Brand: HMBMS + Makati Human Milk Bank
+  - Brand: MHMBS + Makati Human Milk Bank
   - Links: Home, About, How It Works, Programs, Contact
   - Login button linking to `login.html`
   - Mobile hamburger with animated open/close state
 
 - **Hero Section** — Full-viewport with gradient overlay + AI-generated background image
   - Headline: *"Safe Donor Milk. Stronger Babies."*
-  - Subtitle explaining the HMBMS purpose
+  - Subtitle explaining the MHMBS purpose
   - CTA buttons: **Become a Donor** (green) + **Request Milk** (outline white)
   - Three stat chips: 5 User Roles, 3 Collection Programs, −20°C Cold Chain
   - Live Milk Lifecycle Tracker card (Step 1–4 visual with DONE/ACTIVE/PENDING statuses)
@@ -814,7 +814,7 @@ All required sections implemented:
 - **Contact / Footer** — Dark blue gradient footer
   - Placeholder: address, phone, email
   - Quick links column
-  - Footer bar: © 2026 Makati Human Milk Bank | Powered by HMBMS
+  - Footer bar: © 2026 Makati Human Milk Bank | Powered by MHMBS
   - Compliance tags: DOH, Data Privacy Act, SE2 v1.1
 
 - **JavaScript** — Navbar scroll shadow, mobile hamburger toggle, active nav link via IntersectionObserver, scroll-reveal animation via IntersectionObserver
@@ -822,7 +822,7 @@ All required sections implemented:
 #### 5. `login.html` — Login Page Built
 - Two-panel layout: left branding panel + right form panel
 - **Left panel (branding):**
-  - HMBMS logo + org name
+  - MHMBS logo + org name
   - Headline: "Secure Access for Milk Bank Staff, Donors & Recipients"
   - Role context note about single login for all user types
   - Visual role list with color-coded dots (Admin, MedTech, Nurse, Donor, Recipient)

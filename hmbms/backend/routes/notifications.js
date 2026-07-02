@@ -1,5 +1,5 @@
 // ============================================================
-// HMBMS — Notification Routes (PostgreSQL)
+// MHMBS — Notification Routes (PostgreSQL)
 // Web-push style notifications
 // ============================================================
 

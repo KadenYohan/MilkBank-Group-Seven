@@ -1,5 +1,5 @@
 // ============================================================
-// HMBMS — Inventory Routes (Stage 6 - PostgreSQL)
+// MHMBS — Inventory Routes (Stage 6 - PostgreSQL)
 // Inventory dashboard, FIFO dispensing, prescription vault
 // ============================================================
 

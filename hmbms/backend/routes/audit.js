@@ -1,5 +1,5 @@
 // ============================================================
-// HMBMS — Audit Trail Routes (PostgreSQL)
+// MHMBS — Audit Trail Routes (PostgreSQL)
 // Immutable audit log viewing (Admin only)
 // ============================================================
 

@@ -1,5 +1,5 @@
 // ============================================================
-// HMBMS — Recipient Routes (Stage 7 - PostgreSQL)
+// MHMBS — Recipient Routes (Stage 7 - PostgreSQL)
 // Recipient registration and profile management
 // ============================================================
 

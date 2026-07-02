@@ -1,5 +1,5 @@
 // ============================================================
-// HMBMS — Auth Routes (Stage 2 - PostgreSQL)
+// MHMBS — Auth Routes (Stage 2 - PostgreSQL)
 // Login, Logout, Session Check
 // ============================================================
 

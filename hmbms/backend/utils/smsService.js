@@ -1,5 +1,5 @@
 // ============================================================
-// HMBMS — SMS Service (iProg SMS / iprogsms.com)
+// MHMBS — SMS Service (iProg SMS / iprogsms.com)
 // L-03: Real SMS integration replacing the mock gateway
 // ============================================================
 

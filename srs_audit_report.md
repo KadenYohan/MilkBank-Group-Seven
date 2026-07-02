@@ -1,4 +1,4 @@
-# SRS Requirements Audit — HMBMS Codebase (UPDATED)
+# SRS Requirements Audit — MHMBS Codebase (UPDATED)
 
 > Full traceability check of every SRS requirement against the implemented code in [/Users/jessicadorosan/MilkBank-Group-Seven/hmbms](file:///Users/jessicadorosan/MilkBank-Group-Seven/hmbms) following recent bug fixes.
 
